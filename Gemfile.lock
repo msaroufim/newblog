@@ -66,6 +66,7 @@ PLATFORMS
 DEPENDENCIES
   brume!
   bundler (~> 2.0)
+  jekyll
   rake (~> 10.0)
 
 BUNDLED WITH

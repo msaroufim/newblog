@@ -13,4 +13,5 @@ baseurl:
 # color_scheme: avocado
 
 exclude: ['config.ru', 'Gemfile', 'Gemfile.lock', 'vendor']
-
+exclude:
+  - vendor
