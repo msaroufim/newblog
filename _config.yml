@@ -5,7 +5,7 @@ description: My personal blog
 highlighter: null
 permalink: /:title
 
-url: "http://www.marksaroufim.com"
+url:
 baseurl:
 
 # Custom options:
