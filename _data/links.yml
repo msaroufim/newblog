@@ -1,2 +1,8 @@
 - url: /
   title: Home
+- url: /About
+  title: About
+- url: https://github.com/msaroufim
+  title: Github
+- url: https://twitter.com/MarkSaroufim
+  title: Twitter
