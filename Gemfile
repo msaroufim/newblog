@@ -2,7 +2,7 @@ source "https://rubygems.org"
 
 gem 'jekyll'
 gem 'rake'
-ruby "2.3.7"
+ruby "2.4.2"
 gem 'rack-jekyll'
 gem 'bundler'
 
