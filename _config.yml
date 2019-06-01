@@ -1,11 +1,11 @@
-title: Brume
-author: Aigars Dzerviniks
-description: It's simple. It's easy to use. It's a Jekyll theme.
+title: My blog
+author: Mark Saroufim
+description: My personal blog
 
 highlighter: null
 permalink: /:title
 
-url:
+url: "http://www.marksaroufim.com"
 baseurl:
 
 # Custom options:
