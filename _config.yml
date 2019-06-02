@@ -8,6 +8,9 @@ permalink:
 url:
 baseurl:
 
+markdown: kramdown
+mathjax: true
+
 # Custom options:
 # color_scheme: azul|ruby|amber|avocado
 # color_scheme: avocado
