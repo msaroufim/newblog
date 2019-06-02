@@ -1,7 +1,6 @@
 ---
 title: Quantum Computers Can Simulate Classical Computers
 layout: default
-comments: true
 ---
 
 # Simulating a Classical Computer Using a Quantum Computer

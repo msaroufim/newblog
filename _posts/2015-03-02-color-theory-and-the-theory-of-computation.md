@@ -1,7 +1,6 @@
 ---
 title: Color Theory and Theory of Computation
 layout: default
-comments: true
 ---
 
 # Color Theory and The Theory of Computation

@@ -1,7 +1,6 @@
 ---
 title: node.js in your browser
 layout: default
-comments: true
 ---
 
 # node in your browser

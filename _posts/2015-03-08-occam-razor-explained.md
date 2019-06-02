@@ -1,7 +1,6 @@
 ---
 title: Occam's Razor
 layout: default
-comments: true
 ---
 
 # Occam's Razor

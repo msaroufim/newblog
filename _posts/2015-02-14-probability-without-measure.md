@@ -1,7 +1,6 @@
 ---
 title: Probability without measure theory
 layout: default
-comments: true
 ---
 
 # What does it mean to say \\(P(event) = something \\)

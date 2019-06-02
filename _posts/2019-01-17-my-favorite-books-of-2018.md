@@ -1,7 +1,6 @@
 ---
 title: My 2 favorite books of 2018
 layout: default
-comments: true
 ---
 
 # My 2 favorite books of 2018

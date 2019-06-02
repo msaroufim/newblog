@@ -1,7 +1,6 @@
 ---
 title: Alternative Numbering Schemes
 layout: default
-comments: true
 ---
 
 # Alternative Numbering Schemes
