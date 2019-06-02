@@ -3,7 +3,7 @@ author: Mark Saroufim
 description: My personal blog
 
 highlighter: null
-permalink: /:title
+permalink:
 
 url:
 baseurl:
