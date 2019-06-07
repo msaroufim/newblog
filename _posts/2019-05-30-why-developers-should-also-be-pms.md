@@ -17,7 +17,7 @@ At first this advice infuriated me because I found it hopelessly vague. Does get
 
 To figure out the answer to that I tried to look at
 1. What are the common good traits associated with PMs we were hiring?
-2. What are some of the characteristics of the PMs that get promoted the fastest?
+2. What are some of the characteristics of the best PMs I've met?
 
 The answer to the first question was that the PMs were hiring were generally clear communicators both in writing and verbally, while they may not have all been extroverted they did know how to hold conversations and were generally charismatic.
 
@@ -34,7 +34,7 @@ My first week as a developer I was told that my job description is essentially t
 Damn was I confused this time. I did not expect to hear the same job description especially after all the noise I made to switch in the first place. Again I followed the same framework I used to figure out what's an excellent dev
 
 1. What are the common good traits associated with Devs we were hiring?
-2. What are some of the characteristics of devs that get promoted the fastest
+2. What are some of the characteristics of the best devs/scientists I've met?
 
 The answer to that first question was relatively simple, performance on a programming interview.
 
