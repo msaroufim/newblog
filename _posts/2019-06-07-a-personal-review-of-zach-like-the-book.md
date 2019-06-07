@@ -7,13 +7,13 @@ title: A personal review of Zach like the book
 
 This was the first book I ever bought on Twitter. The book had a kickstarter that I missed but thankfully Zachtronics had been spamming my feed saying there are more books available and I honestly feel really fortunate to have a book like this in my library.
 
-![Twitter](/assets/images/2019-06-07-a-personal-review-of-zach-like-the-book-twitter.JPG)
+![Twitter](/assets/images/2019-06-07-a-personal-review-of-zach-like-the-book-twitter.jpg)
 
 If you're reading this, I'd imagine you have played or at least heard of at least one Zachtronics game. Generally, they're what can broadly be referred to as programming games. My experience with most programming games in the past has been something like a kids game trying to teach introductory programming but the Zachtronics games demand a lot more from me and offer a deeper kind of immersion.
 
 Whether you're hacking gameboys or creating new materials, Zachtronics games focus on the cool parts of hacking or in other words the parts that would have gotten the teenager version of yourself all fired up.
 
-![Exapunks](/assets/images/2019-06-07-a-personal-review-of-zach-like-the-book-exapunks.JPG)
+![Exapunks](/assets/images/2019-06-07-a-personal-review-of-zach-like-the-book-exapunks.jpg)
 
 Part of the reason I was so excited about this journal is that over time I've come to believe that to understand how creative people work and learn from them, you need to read their journals. For various reasons, journals are often private so we the public only have access to things like talks, tweets and various summaries that end up feeling more like one dimensional and highly situational advice.
 
@@ -30,7 +30,7 @@ Building games is a fundamentally multi disciplinary experience and humans are f
 ![Font](/assets/images/2019-06-07-a-personal-review-of-zach-like-the-book-font.JPG)
 
 
-My favorite pages from the book are the ones below where he was trying to make a game inspired by biological processes, electric circuits and computer networking. To me the reason this is so impressive is because a lot of people try to acquire scientific knowledge with the goal of applying it to their work. Instead Zach's apprach is more like trying to make your personal interests marketable. But this isn't inherently easy. For the most part when you look at video games they fit into a clearly defined genre with some famous games representing those genres
+My favorite pages from the book are the ones below where he was trying to make a game inspired by biological processes, electric circuits and computer networking. To me the reason this is so impressive is because a lot of people try to acquire scientific knowledge with the goal of applying it to their work. Instead Zach's approach is more like trying to make your personal interests marketable. But this isn't inherently easy. For the most part when you look at video games they fit into a clearly defined genre with some famous games representing those genres
 * DOTA -> MOBA
 * Counter Strike -> FPS
 * Fortnite/PUBG -> Battle Royale
@@ -42,7 +42,7 @@ And as much as I love some of those games they are fairly artificial constructs 
 
 Games are an interactive medium and this medium can be used to interact with anything be it shooting people to farming to being a low level manager at a large company. The challenge isn't finding activities that are fun but more how to create a user experience that makes whatever activity you're interacting with interesting. To be succesful at this you need to be naturally curious to find new untouched game ideas, put on your UX hat and figure out how to best represent a new experience on a screen or VR headset and finally how to make that experience "fun".
 
-I used to think that programming APIs was fundementally a functional task of best understanding a problem domain but the Zachtronics games also add a lot of flavor to the documentation and specific function calls to better immerse you in the world that you're interacting with.
+I used to think that programming APIs was fundamentally a functional task of best understanding a problem domain but the Zachtronics games also add a lot of flavor to the documentation and specific function calls to better immerse you in the world that you're interacting with.
 
 And in some sense, a programming language is the ultimate interface, it has a high learning curve but it rewards you with an infinite amount of options and it turns gaming from a passive experience where you consume someone else's ideas to an active experience where you are creating your own experiences.
 
