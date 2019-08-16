@@ -112,21 +112,3 @@ Reward functions from RL can be used as an additional signal but are not strictl
 For the most part in this blog post we've focused on how to get small representations for more efficient learning but there are other worthwhile goals to accomplish. For example, some representations do not have singularities in them which makes training a Reinforcement Learning algorithm on them more stable and this can be reasoned through using some tools from perturbation analysis and chaos theory. Another idea is to use representations which encode some symbolic reasoning but as far as I'm concerned that idea is less proven in practice. 
 
 I'm planning on writing more about this in an upcoming blog post so stay tuned if you've enjoyed this one and as always feel free to email me with questions
-
-## BixTex 
-
-If you've found this post useful and would like to cite it in your work please use the following
-
-
-{% highlight scheme %}
-
-@misc{MSRTR,
-  author = {Mark Saroufim},
-  title = {A survey of Representation Theory for Robotics},
-  year = {2019},
-  publisher = {GitHub},
-  journal = {GitHub repository},
-  howpublished = {\url{https://github.com/msaroufim}
-}
-
-{% endhighlight %}
