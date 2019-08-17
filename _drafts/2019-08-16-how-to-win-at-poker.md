@@ -32,7 +32,9 @@ Next we'll talk about how counterfactual regret minimization lets us compute a n
  
  
 ## Counter Factual regret minimization
- 
+
+### Data structure to learn Poker
+
 Most turn based games can be modeled as trees where each node represents the current state of the board and each edge represents an action which would move the board from one state to another.
  
 However, like we mentioned above, Poker has some issues if we apply this model in a straightforward manner since we don't really know what the state of our opponent is and our opponents aren't willing to share the history of their states so we can't quite use Vanilla Monte Carlo Tree Search or turn the problem into a supervised learning problem.
@@ -40,6 +42,8 @@ However, like we mentioned above, Poker has some issues if we apply this model i
 So instead each node will represent will combine the states that we do know like the history of raises, folds, card results and for the states that we don't know anything about the cards of our opponent we will instead represent them using a probabilistic belief instead.
  
 So now we have some idea of what a data structure for counterfactual regret minimization would look like but we still didn't explain what we mean by counter factual and what we mean by regret. Let's start with regret, specifically no regret learning.
+
+### No regret learning
  
 No regret learning is a really interesting idea that shows up in the boosting literature and actually comes out very naturally in scenarios like horse gambling.
 
@@ -63,8 +67,13 @@ $$ R = L_H^T - \min_i L_i^t $$
 
 And as you'd intuitevely expect you wanna minimize your regret. If \\(R=0\\) then your approach was regret free.
 
- 
- 
+### How to learn without regret
+ There are many many learning algorithms that you could use with various tradeoffs. The simplest one is perhaps the "Weighted Majority Algorithm"
+
+
+ Majority voting has a fascinating property in that suppose you have \\(n\\) experts each one essentially a bit better than a random coin flip in making decisions then you can show that together they will converge to the optimal decision more often than not. So essentially it's easier to hedge mistakes in a democracy than it is in a dictatorship where there is a single point of failure.
+
+So we have a mixture of experts and we're listening to their advice. Barring prior information all their advice is equally good and we take a majority vote among them. Over time they will make mistakes and we will start prioritizing the advice of experts that have been right more often by basically halving the weight of an experts vote each time they are wrong.
  
  
 ## Tricks to make CFR scale
@@ -80,5 +89,5 @@ If you enjoyed this post, I'd strongly recommend you check out Python implementa
 ## References
 * https://int8.io/counterfactual-regret-minimization-for-poker-ai/
 * https://github.com/tansey/pycfr
- 
+* http://courses.cms.caltech.edu/cs253/slides/cs253-02-WMR.pdf
 
