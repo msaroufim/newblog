@@ -8,12 +8,17 @@ Work in Progress
 # Representation Theory for Robotics
 This goal of this post is to teach you how to efficiently represent the state of a robot with as little memory as possible. The primary application of this is that we can then train Reinforcement Learning (RL) algorithms orders of magnitude faster. One of the main reasons isn't the de facto standard in industrial applications is that the sample complexity i.e: the number of runs an agent needs to do is still prohibitive. 
 
-> So how can we RL on a budget?
+> So how can we do Reinforcement learning on a budget?
 
-## Pixel based reprentations
 Let's pick a simple example, try out different representations and compare them.
 
+
+## Pixel based reprentations
+
 Suppose you have a 2d robot arm which is made up of two limbs and the goal is to reach a red ball.
+
+
+
 
 A trivial representation is all the pixels on the screen. The goal then becomes given all the pixels on the screen what should the agent do next to maximize its reward?
 
@@ -97,16 +102,22 @@ Both kinds of models can be learned in the same manner using an autoencoder. The
 
 > Whoah man...
 
-We can compress the world by deciding on the dimensionality of the output. We learn the weights of the autoencoder using your favorite gradient descent method where we're minimizing in the standard manner \\f(\hat{y}, y)\\.
+We can compress the world by deciding on the dimensionality of the output. We learn the weights of the autoencoder using your favorite gradient descent method where we're minimizing in the standard manner \\(f(\hat{y}, y)\\).
 
 ### Biasing world models
-Reward functions from RL can be used as an additional signal but are not strictly necessary. What makes it compelling though is that we can bias our world models  in multiple ways to make them more robust and useful to us. Some examples are:
-* Slowness: Small changes in state locally
-* Variability: Representation should spend more space describing moving objects
-* Proportionality: state changes by roughly same magnitude for any action
-* Repeatability: making the same change to same state should result in the same state
+Reward functions from RL can be used as an additional signal but are not strictly necessary. What makes it compelling though is that we can bias our world models  in multiple ways to make them more robust and useful to us. Some examples of desirable properties of a reward function are
+* Slowness: States shouldn't change too quickly
+* Variability: Representations should use more bits to encode moving objects
+* Proportionality: States shouldn't change too much based on an action
+* Repeatability: Making the same change to same state should result in the same state at different times should result in the same state
 
+Each of these properties and even a weighted sum of them can be encoded using a function \\(g(A, S; θ) \\) where \\(A \\) is a subset of all historical actions and \\(S \\) is a subset of all historical states
 
+And instead of minimizing \\(f(\hat{y}, y)\\), we would minimize
+
+\\( \min_{θ} f(\hat{y}, y ; θ) + \gamma g \\)
+
+where \\(\gamma \in [0,1] \\)
 
 ## Next steps
 For the most part in this blog post we've focused on how to get small representations for more efficient learning but there are other worthwhile goals to accomplish. For example, some representations do not have singularities in them which makes training a Reinforcement Learning algorithm on them more stable and this can be reasoned through using some tools from perturbation analysis and chaos theory. Another idea is to use representations which encode some symbolic reasoning but as far as I'm concerned that idea is less proven in practice. 
