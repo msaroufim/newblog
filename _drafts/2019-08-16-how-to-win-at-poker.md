@@ -70,11 +70,26 @@ And as you'd intuitevely expect you wanna minimize your regret. If \\(R=0\\) the
 ### How to learn without regret
  There are many many learning algorithms that you could use with various tradeoffs. The simplest one is perhaps the "Weighted Majority Algorithm"
 
-
  Majority voting has a fascinating property in that suppose you have \\(n\\) experts each one essentially a bit better than a random coin flip in making decisions then you can show that together they will converge to the optimal decision more often than not. So essentially it's easier to hedge mistakes in a democracy than it is in a dictatorship where there is a single point of failure.
 
-So we have a mixture of experts and we're listening to their advice. Barring prior information all their advice is equally good and we take a majority vote among them. Over time they will make mistakes and we will start prioritizing the advice of experts that have been right more often by basically halving the weight of an experts vote each time they are wrong.
- 
+So we have a mixture of experts and we're listening to their advice. Barring prior information all their advice is equally good and we take a majority vote among them. 
+
+Over time they will make mistakes and we will start prioritizing the advice of experts that have been right more often by basically halving the weight of an experts vote each time they are wrong.
+
+```python
+# initialize weights
+weights = defaultdict()
+track_record = defaultdict()
+for i in range(N):
+        weights[i][0] = 1/N 
+
+## Adjust weights at time t+1 based on performance at time t
+for i in range(N):
+    if track_record[i][t] == False:
+        weights[i][t+1] == weights[i][t] / 2
+    else:
+        weights[i][t+1] = weights[i][t]
+```
  
 ## Tricks to make CFR scale
  
