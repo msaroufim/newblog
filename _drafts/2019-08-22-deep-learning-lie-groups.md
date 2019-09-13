@@ -57,6 +57,13 @@ We will now show how Lie groups can be used to greatly simplify the forward and 
 ### Forward kinematics
 
 
+### Inverse kinematics
+
+```julia
+for q in qs
+
+````
+
 
 Need a diagram of forward kinematics here
 
