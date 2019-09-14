@@ -3,6 +3,8 @@ layout: default
 title: Lagrangian mechanics - how to turn physics into an optimization problem
 ---
 
+# Lagrangian mechanics - how to turn physics into an optimization problem
+
 Doesn't \\(F = ma \\) solve everything? Seems like all the smart people are thinking about stuff like quantum field theory or string theory. Turns out there's still lots of interesting work going in classical mechanics.
 
 The main idea we'll be exploring with Lagrangian mechanics is whether its possible to do physics in a coordinate invariant manner. This is important because some problems become much simpler or take less parameters to describe depending on the representation. A tight coupling between the representation and the simulation behavior of a physical environment means we'll be less likely to experiment with novel representations.
@@ -17,9 +19,25 @@ Let's take as an example the position of the center of a ball fixed to the wall 
 The polar coordinates in this example have more desirable properties than the cartesian coordinates
 * Polar coordinates are invariant to translation: two identical pendulums at different locations in space will be indistinguishable
 * Given a pendulum position at time \\(t \\) there's only 3 possible positions the pendulum can take at time \\(t + 1 \\), we can end up in only of \\( [(\theta, l), (\theta + \epsilon), l, (\theta - \epsilon)] \\)
-* The previous point should hint us towards \\(l \\) is invariant
+* \\(l \\) is invariant because of the previous point
 
-Lagrangian mechanics are about studying the invariants of a physical system to make it more robust under transformations. It's like taking the polar coordinates example and formalizing it a bit more.
+That said it's still possible to study this problem with plain old Newtonian mechanics, we just have to be comfortable with \\(\sin \\) and \\(cos \\) since there is a one to one correspondence between cartesian and polar coordinates.
+
+### From polar to cartesian
+
+\\(x = l \times \cos(\theta) \\)
+
+\\(y = \times sin(\theta) \\)
+
+### From cartesian to polar
+
+\\(l = \sqrt(x^2 + y^2) \\)
+
+\\( \theta = \tan^{-1} \frac{y}{x}\\)
+
+However, let's stay we're studying a double-pendulum or \\(n \\)-pendulum then we end up with trigonometric expressions that don't look entirely trivial.
+
+Lagrangian mechanics are about studying the invariants of a physical system regardless of the choice of representation.
 
 ## Lagrangian process
 
@@ -49,7 +67,7 @@ Lagrangian mechanics are about studying the invariants of a physical system to m
 
 # Newtonian Mechanics
 
-Newtonian Mechanics describes the motion of a system in terms of the positions, velocitites and accelerations of each of the particles of the system.
+Newtonian Mechanics describes the next position of a system in terms of the current positions, velocitites and accelerations of each of the particles of the system.
 
 Newtonian mechanics are summarized by the famous 3 laws of motions. For what follows we only need to remember the second law of Newton.
 
@@ -60,7 +78,7 @@ Second Law: \\( F = m \ddot x \\) where
 
 A conservative force can represented as the gradient of a potential and suprisingly enough most forces in the universe are conservative. A famous exception is friction. If a force is conservative then we can represent it as the gradient of a potential so we can rewrite the second law of Newton as 
 
-\\(m \ddot x = \frac{\partial}{\partial x}P \\)
+\\(m \ddot x = - \frac{\partial}{\partial x}P \\)
 
 where \\( P \\) is the potential function
 
@@ -72,7 +90,11 @@ CODE EXAMPLE HERE
 
 
 # Lagrangian Mechanics
+
 Lagragian is an alternate formulation of Newtonian Mechanics and while in this tutorial we'll only be talking about classical mechanics, Lagrangians can be found in all areas of physics ranging from electromagnetics to quantum mechanics and relativity.
+
+Instead of predicting the next position based on the current parameters of the system, the goal is to predict the entire path that a system will take and we call this path the configuration path. We can think of all possible configuration paths as occupying their own \\(n \\) dimensional space \\(M \\) and our goal is to find the specific configuration path that would fulfill the principle of least action i.e: minimize action.
+
 
 The motion of a system \\(S \\) can be described by the positions of each particle in that system at every timestep where
 * \\(N \\) is the total number of particles
@@ -86,9 +108,20 @@ The motion of a system \\(S \\) can be described by the positions of each partic
   \\ p_1^{N} & p_N^{2} & \dots  & p_N^{T}  
   \\  \end{bmatrix} $$
 
-Lagrangian \\(L \\) is defined as the difference between the kinetic energy \\(K \\) and potential energy \\(P \\).
+Lagrangian \\(L \\) is defined as the difference between the kinetic energy \\(K \\) and potential energy \\(P \\). 
+
+Kinetic energy is the scalar associated with the vector of motion and potential energy the scalar associated with the vector of location.
 
 \\(L = K - P = \frac{1}{2}mv^2 - P \\)
+
+The kinetic energy of a system is always the same and the potential energy is a function of the domain we're working with. So some examples:
+
+It's worth noting a couple of things here
+1. We don't have any vectors in our expression
+2. We have no dependence on a specific coordinate system
+3. We are not explicity modeling the forces and counterforces at each point (what you did in high school with normal vectors and whatnot) - we are just plugging in the values for potential and kinetic energy and getting back the correct equations of motion
+
+EXAMPLES HERE
 
 ## Lagrangian optimization - Machine Learning interlude
 
@@ -109,7 +142,14 @@ In the variational formulation we can free ourselves from having to work with sp
 
 ## Lagrangian principle of least action
 
-Let's define the action \\(S = \int_a^b L \,dt  \\) and our goal is to minimize \\(S \\) which will give us the path of least action.
+Let's define the action \\(S = \int_a^b L \,dt  \\) and our goal is to minimize \\(S \\) which will give us the path of least action. The path that an object will take to reach a given position in space is the one that minimizes action. This is very similar to the way light takes the shortest path between two possible points, in fact you can derive refraction and reflection from the principle of least action. Great! Let's be more specific about how we'll find the path.
+
+
+
+## Noether's theorem
+
+If a coordinate does not appear in the Lagrangian of a system then it's a velocity is a conserved quantity
+
 
 
 # Next steps
@@ -117,6 +157,8 @@ Hopefully this tutorial made you appreciate how powerful Lagrangians are and enc
 * [Physics from Symmetry](https://www.amazon.com/Physics-Symmetry-Undergraduate-Lecture-Notes/dp/3319666304/ref=as_li_ss_tl?ie=UTF8&qid=1519141872&sr=8-1&keywords=physics+from+symmetry&linkCode=sl1&tag=physfromsym-20&linkId=b86805feb0c3da1f89c0a34d3e50a0a7) 
 * [Structure and Interpretation of Classical Mechanics](https://www.amazon.com/dp/0262028964/)
 * [Gauge Fields, Knots and Gravity](https://www.amazon.com/gp/product/9810220340/ref=ppx_yo_dt_b_asin_title_o02_s00?ie=UTF8&psc=1)
+* [MathPhysicsBook](https://www.mathphysicsbook.com/)
+
 
 And of course email/tweet me if you'd like me to elaborate on something in a further blog post.
 
@@ -125,3 +167,20 @@ And of course email/tweet me if you'd like me to elaborate on something in a fur
 * http://www.macs.hw.ac.uk/~simonm/mechanics.pdf
 * http://www.physicsinsights.org/shortest_path_picture.html
 * http://docs.juliadiffeq.org/stable/tutorials/ode_example.html
+* https://www.youtube.com/watch?v=MIBfKJHMWHU
+* https://brilliant.org/wiki/lagrangian-formulation-of-mechanics/
+* https://en.wikipedia.org/wiki/Noether%27s_theorem
+
+
+### Notes from reading https://brilliant.org/wiki/lagrangian-formulation-of-mechanics/
+
+
+
+Newton's laws are written in terms of vectors that are easiest to manipulate in Cartesian coordinates. While this is fine in some cases in others like double pendulum the notation starts getting in our way. Lagrangian mechanics let us rewrite Newton's laws with scalars instead of vectors. Which frees from the artifacts of working with poorly chosen coordinate systems.
+
+Issues with Newtonian Mechanics
+1. Vector representation is difficult to work with
+2. Number of interactions between particles exploded 
+3. Encoding constraints is explicit (not sure what this means yet)
+
+d'Alembert principle
