@@ -131,7 +131,9 @@ We can translate the above as
 
 We can add as many inputs and outputs as we want. We can nest arrays inside arrays to predict tree like data structures but the key idea is the following.
 
-> Input and output uniquely define WHAT a neural network can represent or which problems it can solve. The layer configuration and the weights of each hidden layer node determine HOW good the neural network will be on a sample task
+> Input and output uniquely define WHAT a neural network can represent or which problems it can solve. The layer configuration and the weights of each hidden layer node determine HOW good the neural network will be on a sample task.
+
+Two neural networks with the same exact inputs and outputs model the same problem. They will differ in performance characteristics due to their hidden layers.
 
 So enough abstractions, let's go over some examples.
 
@@ -171,7 +173,64 @@ List of n points. Think about how to do this while also adding edges
 
 ## Output 
 
+## How to solve complex problems by combining neural networks that solve simpler problems
 
+Compositional or hierarchical learning papers often talk about end to end learning and what it means exactly is best explained via an example.
+
+Suppose your goal is to train a humanoid robot to play soccer
+
+There's a few subskills that seem more basic but crucial to be able to succeed
+1. Learning to balance
+2. Learning to walk
+3. Learning to run
+4. Learning to kick a ball
+5. Learning if an action in given circumstances is against the rules
+6. Learning where opponents and teammates are
+etc...
+
+> Is there any way we can combine knowledge gained from all subskills to get better at the end goal of kicking a soccer ball?
+
+
+Let's rephrase the above question from a type theoretic view of neural networks.
+
+> Can we combine each of the trained neural networks from the smaller tasks to create a larger network that solves the larger task
+
+The point of this section is to then think about what it means to "combine neural" networks and what are the options we have at our disposal. We'll be borrowing ideas from the functional programmaing, category theory and group theory communities here.
+
+A neural network for a task \\(i \\) can be modeled as a function \\(f_i \\), the function can be arbitrarily complicated but for all intents and purposes it doesn't matter at all since we're only looking at the inputs and outputs.
+
+Let's go over some examples
+
+What does \\(f_i^{-1} \\) mean
+* Flip input and output
+* Do backprop for inference
+
+
+What does \\(f_i^{-1} f_i \\) mean
+* Encoder decoder architecture - noop at training time
+
+What does \\(f_i \times f_i  \\) mean
+* Create a tuple of size 2 of the output
+
+What does \\(f_i \times f_j \\) mean
+* Create a tuple, first element from first network and second element from second network
+
+What does \\(f_i + f_j \\) mean
+* Concatenate the outputs of two networks
+
+What does \\(f_i - f_j \\) mean
+* Remove the output associated with the second network
+
+What does \\(f_i / f_j \\) mean
+* Not sure yet myself
+
+
+
+What does \\(f - \\) mean
+
+What does \\(f + )
+
+At the very least a neural network is a group? Ring? 
 
 ### Next steps
 
@@ -179,6 +238,9 @@ If you're looking for more examples to motivate you, I'd recommend you try to an
 1. How can I model problems with unspecified input and output sizes? Google RNN for this, the key idea is feedback and state
 2. How would things like self play in reinforcement learning work in this setting since you don't really have labeled data? You can bootsrap off of your current best estimate which to me is one of the coolest idea I've encountered in ML
 
+If you enjoyed this article you'll probably also enjoy [Neural Networks, Types, and Functional Programming](https://colah.github.io/posts/2015-09-NN-Types-FP/)
+
 
 ## References
 * https://machinelearningmastery.com/keras-functional-api-deep-learning/
+* Deep Learning and the game of Go
