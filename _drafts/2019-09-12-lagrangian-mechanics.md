@@ -170,6 +170,7 @@ And of course email/tweet me if you'd like me to elaborate on something in a fur
 * https://www.youtube.com/watch?v=MIBfKJHMWHU
 * https://brilliant.org/wiki/lagrangian-formulation-of-mechanics/
 * https://en.wikipedia.org/wiki/Noether%27s_theorem
+* https://blog.jle.im/entry/hamiltonian-dynamics-in-haskell.html
 
 
 ### Notes from reading https://brilliant.org/wiki/lagrangian-formulation-of-mechanics/

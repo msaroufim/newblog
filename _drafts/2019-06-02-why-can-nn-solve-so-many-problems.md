@@ -135,6 +135,8 @@ We can add as many inputs and outputs as we want. We can nest arrays inside arra
 
 Two neural networks with the same exact inputs and outputs model the same problem. They will differ in performance characteristics due to their hidden layers.
 
+If we think about the structure of input and output their types encode a specific application. For example, in graphics your input is a 3D scene equipped with a camera (which can be encoded as a vector) and your output is a 2D image rendering (which can be encoded as a tensor). So if we represent a neural network as a function \\(f \\) that solves the graphics rendering problem then \\(f^{-1}) is a function that solves the inverse graphics problem. Inverse graphics is the problem of taking an input 2D image and outputting a 3D scene. Neural networks solve 2 problems at once, the original forward problem and the inverse problem.
+
 So enough abstractions, let's go over some examples.
 
 ![simple](/assets/images/simple.svg)
