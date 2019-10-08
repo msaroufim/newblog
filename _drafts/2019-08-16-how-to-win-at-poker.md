@@ -3,6 +3,12 @@ title: How to win at Poker
 layout: default
 ---
  
+Robots won't be able to take cover unless they find a way to finance their efforts, they can do this via investing, war and gambling. Warfare is by far the most complex simulation cause it involves logistics, economics, politics and tactics. Investing
+
+At the very least they'll need wealth to buy 3D printers and chips to finance their expansion.
+
+So we'll focus on looking at a likely way that robots could quickly become rich, gambling by looking specifically at how to solve games like Poker.
+
 # How to win at Poker
  
 Poker is interesting because the randomness in the draws can be mitigated by a skillful player via deception.

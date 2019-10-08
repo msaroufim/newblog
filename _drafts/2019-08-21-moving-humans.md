@@ -104,3 +104,4 @@ If you've enjoyed this please let me know. Email me your questions and what kind
 # References
 
 * [Picture of all the human body joints](https://www.google.com/search?q=types+of+joints+of+human+body&rlz=1C1GCEA_enUS749US749&sxsrf=ACYBGNQ9xeYGlxS8htwANyTrOdSgdWpI6w:1568971975562&source=lnms&tbm=isch&sa=X&ved=0ahUKEwjL9o-KjN_kAhVLLK0KHVrpDjMQ_AUIEigB&biw=2560&bih=1280#imgrc=jtkhTs5G1ZG1QM:)
+* [Inverse Kinematics in DiffSharp](https://diffsharp.github.io/DiffSharp/examples-inversekinematics.html) is amazing resource which shows how to solve Inverse Kinematics and many other numerical problems in a functional style

@@ -246,3 +246,6 @@ If you enjoyed this article you'll probably also enjoy [Neural Networks, Types, 
 ## References
 * https://machinelearningmastery.com/keras-functional-api-deep-learning/
 * Deep Learning and the game of Go
+
+
+Need to do an intro to category theory either here on in the autodiff chapter
