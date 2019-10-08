@@ -127,6 +127,8 @@ The sum above is infinite and doesn't have a general closed form solution so one
 
 Direct quote: First off, TD learning never averages over fewer trajectories than Monte Carlo because there are never fewer simulated trajectories than real trajectories. On the other hand, when there are more simulated trajectories, TD learning has the chance to average over more of the agent’s experience. This line of reasoning suggests that TD learning is the better estimator and helps explain why TD tends to outperform Monte Carlo in tabular environments.
 
+An alternative to estimating Value function is a Q function where we estimate the value of a state and an action \\(Q(s,a) \\)
+
 
 ## References
 * [A long peek into reinforcement learning by Lilian Weng](https://lilianweng.github.io/lil-log/2018/02/19/a-long-peek-into-reinforcement-learning.html)
