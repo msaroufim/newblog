@@ -54,6 +54,32 @@ And this shows us how \\(Area() \\) is a specific application of the wedge produ
 
 In linear algebra we typically think of vectors as matrices as containers holding elements of \\(\mathbb{R} \\) so an \\(n\\) dimensional vector holds \\(n \\) elements of \\( \mathbb{R} \\). Instead we could think of an \\(n \\) dimensional vector as a single element of \\(\mathbb{R}^n \\)
 
+## Why care about geometric algebra
+
+Geometric Algebra is an ideal programming language for geometry problems which includes anything involving robotic simulations, optimization and machine learning.
+
+Let's say you want to find the intersection point of
+* a line \\(l \\) and a sphere \\(s \\): \\(l \wedge s \\)
+* two lines \\(l_1, l_2 \\): \\(l_1 \wedge l_2 \\)
+* two spheres \\(s_1, s_2 \\): \\(s_1 \wedge s_2 \\)
+* three spheres \\(s_1, s2, s3 \\): \\(s_1 \wedge s_2 \wedge s_3 \\)
+* two spheres \\(s_1, s_2 \\) and a plane \\(p \\): \\(s_1 \wedge s_2 \wedge p \\)
+* Doesn't matter what the shapes are or how many of them \\( \wedge \\) will work
+
+Because geometric algebra has more elegant algebra for intersections this can help us create tiny libraries that are more expressive than most physics engines out there today. Most existing game engines were a monumental effort, some requiring thousands of people to collaberate but if you need a tenth of the usual code to write a game engine in geometric algebra that means you need a tenth amount of the effort to get something working AND you also have an easier to debug and more interpretable language for all your computational geometry problems. 
+
+The main operation in geometric algebra is a rotation about a line \\(L \\) through the origin which can be represented as a rotor \\(R = e^{\frac{\phi}{2}L} \\) 
+
+
+Because geometric algebra has more elegant algebra for intersections and other primitive geometric operations this can help us create tiny but full fledged libraries for geometry. With more expressive and concise code we can express more complicated geometric operations but we still need to make sure geometric algebra is as performant as its linear algebra counterparts. 
+
+## Calculating intersections
+
+Another area where Geometric Algebra shines is in computing intersections of different surfaces and shapes. This comes up a lot in physics engine where you need to be able to tell whether two objects collide with each other to either move them according to the laws of your physics engine.
+
+So suppose that \\(a, b \\) are both spheres then we can describe their intersection using
+
+\\(a \wedge b \\)
 
 ## References
 
@@ -63,3 +89,5 @@ In linear algebra we typically think of vectors as matrices as containers holdin
 * [Geometric algebra for computer science](https://www.amazon.com/Geometric-Algebra-Computer-Science-Revised/dp/0123749425/ref=sr_1_8?keywords=geometric+algebra&qid=1570577296&s=books&sr=1-8) is a good second book on geometric algebra. One amazing thing about this book is that goes over all the details around building an efficient geometric algebra library which the authors provide alongside a rich rendering experience.
 * [Ganja.js](https://github.com/enkimute/ganja.js) is a fully fledged geometric algebra library in Javascript. You'll learn a lot by checking out the demos and the README.
 * [The power of Geometric Algebra Computing for Mathematica](https://www.youtube.com/watch?v=1cWGV2qaBHo) is a short talk that discusses some applications of geometric algebra.
+* [Joan Lasenby on Applications of Geometric Algebra in Engineering](https://www.youtube.com/watch?v=ikCIUzX9myY&t=1005s)
+* [An Introduction to Geometric Algebra over R^2](https://bitworking.org/news/ga/2d)
