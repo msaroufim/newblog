@@ -130,9 +130,17 @@ Direct quote: First off, TD learning never averages over fewer trajectories than
 An alternative to estimating Value function is a Q function where we estimate the value of a state and an action \\(Q(s,a) \\)
 
 
+Off policy learning lets us weigh Q values by an arbitrary policy as opposed to the policy we're currently using for exploration
+
+\\( \uppi^off \\) and \\(\uppi^on \\)
+
+Make sure to give 1 line explanations of SARSA vs MC vs TD learning vs Q learning
+
+
 ## References
 * [A long peek into reinforcement learning by Lilian Weng](https://lilianweng.github.io/lil-log/2018/02/19/a-long-peek-into-reinforcement-learning.html)
 * [Reinforcement Learning: An Introduction by Sutton and Barto](http://incompleteideas.net/book/the-book-2nd.html)
 * Deep Reinforcement Learning in ACtion
 * Deep Learning and the Game of Go
 * Grokking Deep Reinforcement Learning
+* https://distill.pub/2019/paths-perspective-on-value-learning/

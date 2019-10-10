@@ -54,6 +54,19 @@ And this shows us how \\(Area() \\) is a specific application of the wedge produ
 
 In linear algebra we typically think of vectors as matrices as containers holding elements of \\(\mathbb{R} \\) so an \\(n\\) dimensional vector holds \\(n \\) elements of \\( \mathbb{R} \\). Instead we could think of an \\(n \\) dimensional vector as a single element of \\(\mathbb{R}^n \\)
 
+Any vector can be expressed in terms of the basis vectors \\(e_1, e_2 \\) of the space its in. So if we have two vectors \\(a, b \\) we can express
+
+\\(a = a_1 e_1 + a_2 e_2 \\)
+\\(b = b_1 e_1 + b_2 e-2 \\)
+
+And if we take \\(a \wedge b = (a_1 b_2 - a_2 b_1) e_1 \wedge e_2 \\) which if you ignore the term with the basis vectors you end up with the familar formula for a matrix determinant.
+
+The geometric product is then the sum of the wedge product and the inner product
+
+\\(ab = a \cdot b + a \wedge b \\)
+
+Show the matrix determinant here
+
 ## Why care about geometric algebra
 
 Geometric Algebra is an ideal programming language for geometry problems which includes anything involving robotic simulations, optimization and machine learning.
@@ -90,4 +103,7 @@ So suppose that \\(a, b \\) are both spheres then we can describe their intersec
 * [Ganja.js](https://github.com/enkimute/ganja.js) is a fully fledged geometric algebra library in Javascript. You'll learn a lot by checking out the demos and the README.
 * [The power of Geometric Algebra Computing for Mathematica](https://www.youtube.com/watch?v=1cWGV2qaBHo) is a short talk that discusses some applications of geometric algebra.
 * [Joan Lasenby on Applications of Geometric Algebra in Engineering](https://www.youtube.com/watch?v=ikCIUzX9myY&t=1005s)
-* [An Introduction to Geometric Algebra over R^2](https://bitworking.org/news/ga/2d)
+* [An Introduction to Geometric Algebra over R^2](https://bitworking.org/news/ga/2d) which is an excellent first introduction to Geometric Algebra. I strongly suggest you also inspect source when checking the animations to see how everything works
+* [Foundations of Game Engine Development, Volume 1: Mathematics](https://www.amazon.com/Foundations-Game-Engine-Development-Mathematics/dp/0985811749) which covers all the math you need for 3D graphics, the last section of the book is dedicated to Cliford and Grassmanian algebras. This book is concise and clear with loads of good illustrations
+* https://scholarworks.sjsu.edu/cgi/viewcontent.cgi?referer=&httpsredir=1&article=7943&context=etd_theses
+* http://www.jaapsuter.com/geometric-algebra.pdf
