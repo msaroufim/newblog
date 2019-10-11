@@ -107,8 +107,16 @@ for i in range(N):
 If you enjoyed this post, I'd strongly recommend you check out Python implementation of DeepStack https://github.com/cgnicholls/deepstack and the [DeepStack Paper](https://static1.squarespace.com/static/58a75073e6f2e1c1d5b36630/t/58b7a3dce3df28761dd25e54/1488430045412/DeepStack.pdf).
  
  
+ Need to mention how multi agent games has made a comeback in the bitcoin community where we are thinking how to incentivize people to be honest.
+
+ Main aspects of how people deal with each other include
+ * Auctions
+ * Social functions, can we even agree on one?
+ * Voting
+ * Computing nash equilibria
+
 ## References
 * https://int8.io/counterfactual-regret-minimization-for-poker-ai/
 * https://github.com/tansey/pycfr
 * http://courses.cms.caltech.edu/cs253/slides/cs253-02-WMR.pdf
-
+* [Multiagent systems](https://www.amazon.com/Multiagent-Systems-Algorithmic-Game-Theoretic-Foundations/dp/0521899435/ref=pd_sbs_14_t_2/131-4946721-1001121?_encoding=UTF8&pd_rd_i=0521899435&pd_rd_r=1140f21b-433b-40e7-b1c8-0e3a2206761f&pd_rd_w=TlEkS&pd_rd_wg=RZeba&pf_rd_p=5cfcfe89-300f-47d2-b1ad-a4e27203a02a&pf_rd_r=Y7ZNNN5X6GJGHQBF6TDZ&psc=1&refRID=Y7ZNNN5X6GJGHQBF6TDZ)
