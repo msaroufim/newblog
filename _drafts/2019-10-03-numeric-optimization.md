@@ -18,6 +18,9 @@ The goal is to minimize an objective function \\(f \\) while making sure that \\
 * A point in an interval: \\(f(x) = x\\) s.t \\(g(x) \leq 5 \\)
 * Minimizing the negative is the same as maximizing \\(\min -f(x) = \max f(x) \\)
 * Find the position of a particle in a physical system which minimizes total energy (conservation of energy): \\(\min E \\) s.t \\()
+* Find a winning sudoku configuration:
+* Allocate taxis to a city
+* Pick \\(n \\) stocks s.t you have no more than 30% in bitcoin
 
 
 The examples above should have convinced you that we can think of
@@ -52,7 +55,17 @@ The two main approaches are
 
 Convex functions have the desirable property that any local minimum is a global minimum.
 
-More specifically a point \\(x^{\min} \\) is guaranteed to be a minimum of some function \\(f \\) if \\(f'(x^{\min}) = 0 \\) which is called the first order condition and if \\(f^2(x) > 0 \\) which is called the second order condition. In other words the first condition which you're probably already familiar with, is a necessary but not sufficient condition for finding minima.
+More formally a function \\(f \\) is convex as defined over a convex set \\(X \\) if
+
+\\(\forall x_1, x_2 \in X, \forall t \in [0, 1]: \qquad f(tx_1+(1-t)x_2)\leq t f(x_1)+(1-t)f(x_2) \\)
+
+And a convex set is defined as a set where if you take any two points in a set, all the points on the line joining them are also in the set. The line can be described as the set \\( \{ \alpha x_1 + (1 - \alpha)x_2 \} \\)
+
+![convex-set](/assets/images/convex-set.png)
+
+
+
+A alternate but equivalent formulation is that a function \\(f \\) if convex if for a point \\(x^{\min} \\) is guaranteed to be a minimum of some function \\(f \\) if \\(f'(x^{\min}) = 0 \\) which is called the first order condition and if \\(f^2(x) > 0 \\) which is called the second order condition. In other words the first condition which you're probably already familiar with, is a necessary but not sufficient condition for finding minima. (Need to reformulate this)
 
 
 In any optimization algorithm we're dealing with distances to a feasible set or an optimal solution but we have some flexibility in how to choose our distance functions. Distance functions are functions that take as parameters two points in our space. You're already familiar with different distance functions if you've ever used a GPS. There's a birdeye view distance between two points called the Euclidean distance function and there's the distance of the street level physical path between two points called the Manhattan distance
@@ -68,14 +81,39 @@ In particular there's a special class of distance functions called metrics which
 
 
 # Gradient descent
-Talk about this next
+Talk about this next - need some julia code
+
+Gradient descent is an iterative algorithm that can help you find the minimums of functions. It starts off from an initial guess and follows the gradient direction to get to the actual minimum. I find it a lot clearer to discuss iterative algorithms using code instead of math (math is inherently functional)
+
+```julia
+function step!(f, Δf,  x)
+    α, gradient = M . α, Δf
+    return x - α * gradient  
+end
+```
+
+There's a couple of different ways in which we can improve vanilla gradient descent
+1. Changing the gradient (e.g: first order vs second order                         )
+2. Changing the learning rate α 
+3. Adding some randomness
+4. Adding some evolution
+
+In the code above we assign the gradient to Δf but there's an entire body of litterature dedicated to finding good gradients such that the training is either fast, stable, memory efficient etc.. Here are some examples of popular ones you may see in the intialization phase of machine learning code.
+
+* Momentum descent:
+* Adagrad:
+* Nesterov:
+* 
+
+
+In fact if you come up with your own gradient update function based on some sort of mathematical insight from pretty much any mathematical field, you'll bound to get something that works really on a couple of smaller benchmarks and hopefully you can use your newfound online credibility to request the big dollars from Facebook and Google.
 
 # Trust region absolute and relative improvement
 * Lipschitz
 
-Lipschitz continuous function are well behaved from an optimization standpoint because they put a bound on the how fast a continuous function can change. Specifically for a distance function.
+Lipschitz continuous function are well behaved from an optimization standpoint because they put a bound on the how fast a continuous function can change. Specifically for a distance function we'd like to bound the variation in the output by the variation in the input times some constant \\(K \\)
 
-\\(d(f(x_2) - f(x_2)) \\)
+\\(d(f(x_2) - f(x_1)) < K d(x_2, x_2) \\)
 
 Lipschitz functions become important once you consider that during the process of gradient descent you're taking some initial guess at a minimum as \\(x_0 \\) and then at every step \\(i \\) you update according to \\(x_i = x_{i-1} - \epsilon h(.) \\) where \\(h \\) is our update function and \\(\epsilon \\) is the update step size. If a function has large spikes what will happen is that small changes in our parameters will cause huge changes in our output and make the training highly unstable. Unstable training means slow with weird predictions
 
@@ -87,6 +125,8 @@ So how do we minimize \\(n \\) functions \\(f_1, f_2 \cdots f_n \\)
 Theoretically this is not really possible since different functions will have different parameters that minimize them but we can decide the weight to give to each function and take a weighted sum of them and minimize that to get
 
 \\(\min w_1 f_1 + w_2 f_2 + \cdots + w_n f_n \\)
+
+The main issue with this approach is that you need pick each of \\(w_1, w_2 \cdots w_n) and because you're optimizing over several functions you're not guaranteed to get good performance on any. There is no general theory for how to do this well so a lot of research goes into trying out different kinds of \\(f \\) functions and different kinds of weighting schemes and real world developers will typically pick hyperparams that have worked well on research datasets.
 
 # Supervised learning
 
@@ -141,9 +181,10 @@ Need to also write a brief Julia tutorial including
 
 
 ## References
-* [Algorithms for optimization](https://www.amazon.com/Algorithms-Optimization-Press-Mykel-Kochenderfer/dp/0262039427/ref=sr_1_3?keywords=convex+optimization&qid=1570751960&sr=8-3) beautiful book with concise explanations, code and figures - this was my favorite
+* [Algorithms for optimization](https://www.amazon.com/Algorithms-Optimization-Press-Mykel-Kochenderfer/dp/0262039427/ref=sr_1_3?keywords=convex+optimization&qid=1570751960&sr=8-3) beautiful book with concise explanations, code and figures - this book has become my goto for any concepts in otpimization that I feel fuzzy with. A particular highlight was the graphics hat show you how the different optimization algorithms vary in their behavior along with really concise Julia code that shows you exactly how they work
 
 * [Convex optimization](https://www.amazon.com/Convex-Optimization-Corrections-2008-Stephen/dp/0521833787/ref=sr_1_1?keywords=convex+optimization&qid=1570751960&sr=8-1) - an excellent theoretical book, needs to to be read alongside code to really make sense or else it can seem abstract on a first read. This is the most mathematically rigourous treatment of convex optimization problems that I know of. The problems are also of very high quality and will help you work through formulating various problems as convvex optimization problems
 * [Convex.jl](https://github.com/JuliaOpt/Convex.jl) library to solve convex optimization problems
 * [JuMP](https://github.com/JuliaOpt/JuMP.jl) Mamba: Markov chain Monte Carlo (MCMC) for Bayesian analysis in julia
 * [Boosting]()
+* [Data Science from Scratch](https://github.com/joelgrus/data-science-from-scratch) this is by far my favorite non academic reference on machine learning. You really code up everything from scratch from data lodaing to a linear algebra library, to various optimizers. Even if you know how everything works already, seeing it in a concise and clear format will really crystallize how everything works in your head
