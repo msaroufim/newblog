@@ -21,8 +21,8 @@ title: A Heretic's guide to Machine Learning
 
 # Additions
 
-I'll add any interesting additions you have
+I'll add any useless suggestions you have.
 
 # Rebuttals
 
-If you send me a good argument disproving any of the above, I'll write down your argument write here and amend my original thought.
+I'll add your rebuttals, happy to change my mind on any of the above.
