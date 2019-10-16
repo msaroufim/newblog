@@ -1,9 +1,9 @@
 ---
 layout: default
-title: A Heretic's guide to Machine Learning
+title: A Heretic's Guide to Machine Learning
 ---
 
-# A Heretic's guide to Machine Learning
+# A Heretic's Guide to Machine Learning
 
 
 1. PCA is useless
