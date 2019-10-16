@@ -17,7 +17,8 @@ title: A Heretic's guide to Machine Learning
 9. Expensive benchmarks are useless
 10. Hidden data makes all benchmarks useless
 11. Neural architecture search is useless
-12. Gaussian distributions are useless
+12. Interpretability research should be done in a philosophy department i.e: useless 
+13. Gaussian distributions are useless
 
 # Additions
 
