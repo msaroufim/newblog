@@ -7,22 +7,25 @@ title: Versor product
 
 If you're like me, the first time you were introduced to linear algebra you were told something along the lines of.
 
-Vector
-Matrix
-Determinant
-Trace
+A vector is a container with a bunch of values \\(v = [v_1, v_2 \cdots v_n] \\)
+
+A matrix is a bunch of vectors stacked on top of each other
+
+$\begin{bmatrix}a & b\\c & d\end{bmatrix}$
+
+The determinant of a matrix is a scalar \\(ac - db \\) which represents the area spanned by the shapes of the rows or columns.
+
 
 > Why are that those are the right definitions? Why do they only work for specific shapes? Is there an underlying geometric representation we're missing
 
-Because math needs to be algebraic is straight up a false statement
+Because your professors said so isn't a great justification. In the same that social scientists "debate" the merits of different political and economic policies, math also has various schools of thought. The Linear Algebra formalism became widespread especially after Maxwell publicized his equations but in parallel we had people like Grassman and Clifford work on different formalisms for space which make some operations much simpler.
 
 Even though I'd been working with Linear Algebra professionaly for most of my life, I've always found some its operations confusing. In particular
 
 1. Why does computing the determinant look so weird? Why does it only work for square matrices?
 2. Why is it that \\(ab \neq ba \\)? If they're not equal then what's the relationship between them?
-3. The cross product \\(a \times b = \|a \| \| b \| \sin(\theta) n \\) is used to find the area of the parallelogram spanned by the two vectors \\(a, b \\). Why do I need to use my fingers to figure out what \\(n \\) is and why doens't the cross product work in dimensions higher than 3? Dimensions higher than 3 are not armchair philosophizing, in fact you use them all them the time whenever you work with a dataset with more than 3 columns.
+3. The cross product \\(a \times b = \|a \| \| b \| \sin(\theta) n \\) is used to find the area of the parallelogram spanned by the two vectors \\(a, b \\). Why do I need to use my fingers to figure out what \\(n \\) is and why doesn't the cross product work in dimensions higher than 3? Dimensions higher than 3 are not armchair philosophizing, in fact you use them all them the time whenever you work with a dataset with more than 3 columns.
 
-As a side note we can use geometric algebra to generalize
 
 ## Exterior product
 

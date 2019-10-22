@@ -29,3 +29,5 @@ Best way to learn in a new domain is to just copy stuff that works
 Need a diagram of Arduino, robot and program
 
 Even an IC can be reverse engineeered with the help of Google and a microscope but at that point you need to invest in an electronics lab which unfortunately I'm also just starting to piece together. [Reading Silicon: How to reverse engineer IC](https://www.youtube.com/watch?v=aHx-XUA6f9g) goes into a lot more detail
+
+Check out projects on r/arduino and r/raspberry_pi for inspiration
