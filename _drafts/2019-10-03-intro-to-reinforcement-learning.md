@@ -79,9 +79,17 @@ RL algorithms differ across various parameters
 2. On policy vs off policy:
 3. Markovian vs non Markovian: 
 
-Define a policy
+The goal of Reinforcement Learning is to find a policy \\(\Pi \\) which tells you what action \\(a \\) to take in some state \\(s \\) \\(\Pi(s) = a \\)
+
+
 
 Define a value function
+
+RL algorithms can either be 
+1. Model based where you either the model of the environment is given or explicity learned
+2. Model free methods where you treat the environment as a black box
+
+
 
 ### Markovian property
 The Markovian property is usually stated as 
@@ -113,7 +121,7 @@ Before we move on there's a few important issues with reinforcement learning tha
 The first issue is the tradeoff between exploration and exploitation
 
 
-The second issue is that reinforcement learning training is unstable, different hyperparam changes may make a problem converge or not and it's very difficult to say a priori which algorithms and hyperparameters will be best without
+The second issue is that reinforcement learning training is unstable, different hyperparam changes may make a problem converge or not and it's very difficult to say a priori which algorithms and hyperparameters will be best without a ton of tweaking.
 
 
 # https://distill.pub/2019/paths-perspective-on-value-learning/
