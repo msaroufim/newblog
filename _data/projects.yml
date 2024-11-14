@@ -1,0 +1,11 @@
+projects:
+  - title: "TorchData"
+    description: "Maintaining core data APIs and developer tooling experience for PyTorch. Focused on improving the developer experience for loading and processing data for deep learning."
+    url: "https://github.com/pytorch/data"
+    technologies: ["Python", "PyTorch", "CUDA"]
+    
+  # Add more projects like:
+  - title: "Deep RL Robot Arm"
+    description: "Implemented deep reinforcement learning to control a 2D robot arm, demonstrating practical applications of RL in robotics control systems."
+    url: "https://github.com/msaroufim/RoboticArm"
+    technologies: ["Python", "PyTorch", "Reinforcement Learning"]
