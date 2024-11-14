@@ -4,6 +4,7 @@ title: Blog
 permalink: /blog/
 ---
 <section class="archive">
+{% for post in site.posts %}
 {% unless post.next %}
   {% unless forloop.first %}
     </div>
