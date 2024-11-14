@@ -3,13 +3,13 @@ layout: default
 title: Portfolio
 ---
 <section>
-  {% raw %}{% for project in site.data.projects.projects %}
+  {% for project in site.data.projects.projects %}
     <article style="margin-bottom: 2em;">
       <h2><a href="{{ project.url }}" target="_blank">{{ project.title }}</a></h2>
       <div style="color: #666;">{{ project.technologies | join: ", " }}</div>
       <p>{{ project.description }}</p>
     </article>
-  {% endfor %}{% endraw %}
+  {% endfor %}
 </section>
 
-{% raw %}{% include social.html %}{% endraw %}
+{% include social.html %}
