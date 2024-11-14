@@ -4,7 +4,6 @@ title: Blog
 permalink: /blog/
 ---
 <section class="archive">
-{% raw %}{% for post in site.posts %}
 {% unless post.next %}
   {% unless forloop.first %}
     </div>
@@ -36,5 +35,5 @@ permalink: /blog/
     </div>
   </div>
   {% endif %}
-{% endfor %}{% endraw %}
+{% endfor %}
 </section>
