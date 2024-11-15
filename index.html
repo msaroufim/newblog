@@ -3,7 +3,6 @@ layout: default
 title: Portfolio
 ---
 
-Some of my favorite projects that I actually remember
 
 <section>
   {% for project in site.data.projects.projects %}
@@ -11,6 +10,7 @@ Some of my favorite projects that I actually remember
       <h2><a href="{{ project.url }}" target="_blank">{{ project.title }}</a></h2>
       <div style="color: #666;">{{ project.date }}</div>
       <p>{{ project.description }}</p>
+      <p>{{ project.url }}</p>
     </article>
   {% endfor %}
 </section>
