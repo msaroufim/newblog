@@ -114,7 +114,6 @@ Alphabetically sorted. My [goodreads account](https://www.goodreads.com/review/l
 * [Cartoon Animation](https://www.goodreads.com/book/show/369769.Cartoon_Animation)
 * [Case in Point: Complete Case Interview Preparation](https://www.goodreads.com/book/show/7203833-case-in-point)
 * [Catch-22](https://www.goodreads.com/book/show/9659232-catch-22)
-* [Catch-22](https://www.goodreads.com/book/show/9995541-catch-22)
 * [Causality: Models, Reasoning, and Inference](https://www.goodreads.com/book/show/6926573-causality)
 * [Certain to Win: The Strategy of John Boyd, Applied to Business](https://www.goodreads.com/book/show/1018410.Certain_to_Win)
 * [Challenges for Game Designers](https://www.goodreads.com/book/show/4726656-challenges-for-game-designers)
