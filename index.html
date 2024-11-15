@@ -2,14 +2,31 @@
 layout: default
 title: Portfolio
 ---
-
-
 <section>
   {% for project in site.data.projects.projects %}
-    <article style="margin-bottom: 2em;">
-      <h2><a href="{{ project.url }}" target="_blank">{{ project.title }}</a></h2>
-      <div style="color: #666;">{{ project.date }}</div>
-      <p>{{ project.description }}</p>
-    </article>
+  <article class="project-card">
+    <h2 class="project-title"><a href="{{ project.url }}" target="_blank">{{ project.title }}</a></h2>
+    <div class="project-date">{{ project.date }}</div>
+    <p class="project-description">{{ project.description }}</p>
+  </article>
   {% endfor %}
 </section>
+
+<style>
+.project-card {
+  margin-bottom: 1.5em;
+}
+
+.project-title {
+  margin-bottom: 0.2em;
+}
+
+.project-date {
+  color: #666;
+  margin-bottom: 0.3em;
+}
+
+.project-description {
+  margin-top: 0.3em;
+}
+</style>
