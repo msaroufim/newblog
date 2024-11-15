@@ -774,4 +774,3 @@ Alphabetically sorted. My [goodreads account](https://www.goodreads.com/review/l
 * [Zen Flesh, Zen Bones: A Collection of Zen and Pre-Zen Writings](https://www.goodreads.com/book/show/870160.Zen_Flesh_Zen_Bones)
 * [Zen and the Art of Motorcycle Maintenance: An Inquiry Into Values (Phaedrus, #1)](https://www.goodreads.com/book/show/629.Zen_and_the_Art_of_Motorcycle_Maintenance)
 * [Zero to One: Notes on Startups, or How to Build the Future](https://www.goodreads.com/book/show/18050143-zero-to-one)
-* [[By Gabor Mate ] In the Realm of Hungry Ghosts: Close Encounters with Addiction 1st Edition (Paperback)【2018】by Gabor Mate (Author) (Paperback)【2018】by Gabor Mate (Author) (Paperback)](https://www.goodreads.com/book/show/141792394-by-gabor-mate-in-the-realm-of-hungry-ghosts)
