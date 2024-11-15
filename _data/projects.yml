@@ -14,7 +14,7 @@ projects:
     description: "I was a cofounder and tech lead where our goal was to make it trivial to explore and apply quantization algorithms"
     url: "https://github.com/pytorch/ao"
 
-  - title: "NeurIPS Hacker Cup AI challenge""
+  - title: "NeurIPS Hacker Cup AI challenge"
     date: 2023
     description: "We opened up the popular Hacker cup competition for the first time ever to AI because we need harder evals"
     url: "https://www.facebook.com/codingcompetitions/hacker-cup"

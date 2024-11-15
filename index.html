@@ -9,7 +9,7 @@ Some of my favorite projects that I actually remember
   {% for project in site.data.projects.projects %}
     <article style="margin-bottom: 2em;">
       <h2><a href="{{ project.url }}" target="_blank">{{ project.title }}</a></h2>
-      <div style="color: #666;">{{ project.technologies | join: ", " }}</div>
+      <div style="color: #666;">{{ project.date }}</div>
       <p>{{ project.description }}</p>
     </article>
   {% endfor %}
