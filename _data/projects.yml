@@ -9,7 +9,7 @@ projects:
     date: 2024
     url: "https://discord.com/invite/gpumode"
 
-  - title: "torchao: PyTorch native quantization for inference and training"
+  - title: "torchao: PyTorch native quantization"
     date: 2024
     description: "I was a cofounder and tech lead where our goal was to make it trivial to explore and apply quantization algorithms"
     url: "https://github.com/pytorch/ao"
