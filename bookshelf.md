@@ -3,6 +3,8 @@ layout: default
 title: About
 ---
 
+I enjoy reading quite a bit and these are the books I've read over the years. My [goodreads account](https://www.goodreads.com/review/list/35150018-mark-saroufim?utf8=%E2%9C%93&shelf=%23ALL%23&per_page=50) might be more up to date
+
 * [Jimmy Corrigan: The Smartest Kid on Earth](https://www.goodreads.com/book/show/321821.Jimmy_Corrigan)
 * [The Acme Novelty Library Final Report to Shareholders and Rainy Day Saturday Afternoon Fun Book](https://www.goodreads.com/book/show/7552.The_Acme_Novelty_Library_Final_Report_to_Shareholders_and_Rainy_Day_Saturday_Afternoon_Fun_Book)
 * [Six Memos for the Next Millennium](https://www.goodreads.com/book/show/18222748-six-memos-for-the-next-millennium)
