@@ -2,7 +2,7 @@ projects:
   - title: "Project popcorn"
     description: "Training an LLM in public to generate efficient CUDA and Triton Kernels. With 4 key workstreams: Data, Infra, Science and Language." 
     date: 2025
-    url: "https://gist.github.com/msaroufim/087c2a358c505e287a926e6a27b3e3b0"
+    url: "https://gpu-mode.github.io/popcorn/"
 
   - title: "GPU MODE (fka CUDA MODE)"
     description: "I cofounded this community with Andreas Kopf. Probably my most important project, a Discord community where people learn how GPUs work and then go on to ship real world projects"
@@ -70,7 +70,7 @@ projects:
     url: "https://marksaroufim.medium.com/the-robot-overlord-manual-d4ee709155bc"
 
   - title: "yuri.ai: Game AI using RL"
-    description: "It was truly magical for me seeing AI beat top humans at DOTA and Starcraft so I wanted to do the same for all games. This was unfortunately my most painful and least succesful project but I learnt a lot about game development and online communities. RL and games just feel so real to me as I've been a competitive strategy gamer most of my life starting with Chess then DOTA and now something new"
+    description: "It was truly magical for me seeing AI beat top humans at DOTA and Starcraft so I wanted to do the same for all games. This was unfortunately my most painful and least succesful project but I learnt a lot about game development and online communities. One saving grace was I became an amateur game developer and that meant a lot considering I've been a lifelong competitive gamer"
     date: 2018
     url: "https://marksaroufim.medium.com/reinforcement-learning-a-declarative-paradigm-for-game-ai-41da1ee92cd9"
 
