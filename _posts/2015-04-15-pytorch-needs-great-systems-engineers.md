@@ -12,7 +12,7 @@ Both LLaMA and ChatGPT pretraining rely on our infrastructure, so do thousands o
 We know the job market for junior engineers is tough right now. While other companies are freezing junior hiring, we're doubling down. Junior engineers often question assumptions that experienced engineers take for granted. One of PyTorch's founding authors Adam Paszke was an undergraduate when he wrote PyTorch.
 
 ## The crazy low-level ML Systems stuff you’ll work on
-If you're impatient and hate waiting weeks for training runs, if you believe good ideas should help others, and if you want to understand how computers really work - ML Systems is the perfect career start and PyTorch is arguably the most used ML Systems project right now.
+If you're impatient and hate waiting weeks for training runs, if you believe good ideas should help others, and if you want to understand how computers really work - ML Systems is the perfect career start and PyTorch is one of the most succesful ML Systems projects of all time.
 
 If you’re early career and smart you should not be vibe coding, you should be working on harder problems. Here is a random list of projects we’ve been up to in PyTorch.
 * Rewriting core collectives to introduce fault tolerance with RDMA and GPUDirect, allowing training to continue even when nodes fail
