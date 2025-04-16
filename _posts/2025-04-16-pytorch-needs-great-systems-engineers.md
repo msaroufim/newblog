@@ -38,4 +38,4 @@ This job isn't for everyone, and that's okay. You probably won't enjoy working w
 You work with users directly. There are no manufactured problems, you need to work on the actual bottlenecks preventing AI progress. Open source means you're building in public, getting feedback in public, and earning a public reputation for your work. Your GitHub commits become your resume and we hope to be the last leetcode interview you ever need to go through.
 
 ## How can I apply
-If you're smart and curious we should talk. Express your interest on https://workwithpytorchmeta.com/. It should take no more than 5 minutes.
+If you're smart and curious we should talk. Express your interest on [https://workwithpytorchmeta.com/](https://workwithpytorchmeta.com/). It should take no more than 5 minutes.
