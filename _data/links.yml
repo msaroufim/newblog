@@ -2,5 +2,7 @@
   title: Portfolio
 - url: /blog
   title: Blog
+- url: /talks
+  title: Talks
 - url: /bookshelf
   title: Bookshelf

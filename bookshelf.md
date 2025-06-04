@@ -5,6 +5,7 @@ title: About
 
 Alphabetically sorted. My [goodreads account](https://www.goodreads.com/review/list/35150018-mark-saroufim?utf8=%E2%9C%93&shelf=%23ALL%23&per_page=50) might be more up to date
 
+* [Learn You a Haskell for Great Good!](https://www.goodreads.com/book/show/6593810-learn-you-a-haskell-for-great-good)
 * [1-Page Marketing Plan](https://www.goodreads.com/book/show/38911820-1-page-marketing-plan)
 * [100 Decisive Battles: From Ancient Times to the Present](https://www.goodreads.com/book/show/1105674.100_Decisive_Battles)
 * [1984 (Nineteen Eighty-Four) with Quoates](https://www.goodreads.com/book/show/56640893-1984-nineteen-eighty-four-with-quoates)
@@ -327,7 +328,6 @@ Alphabetically sorted. My [goodreads account](https://www.goodreads.com/review/l
 * [Labyrinths: Selected Stories & Other Writings](https://www.goodreads.com/book/show/336116.Labyrinths)
 * [Language Implementation Patterns: Techniques for Implementing Domain-Specific Languages](https://www.goodreads.com/book/show/6770855-language-implementation-patterns)
 * [Le Petit Prince et ses amis](https://www.goodreads.com/book/show/78336.Le_Petit_Prince_et_ses_amis)
-* [Learn You a Haskell for Great Good!](https://www.goodreads.com/book/show/6593810-learn-you-a-haskell-for-great-good)
 * [Learning Spark: Lightning-Fast Big Data Analysis](https://www.goodreads.com/book/show/17318146-learning-spark)
 * [Legal Systems Very Different From Ours](https://www.goodreads.com/book/show/43536432-legal-systems-very-different-from-ours)
 * [Leonardo da Vinci](https://www.goodreads.com/book/show/34684622-leonardo-da-vinci)
