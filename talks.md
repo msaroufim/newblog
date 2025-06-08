@@ -14,7 +14,6 @@ I have a bunch of talks on my own channel
 ## Selected Talks & Appearances
 
 ### Technical talks
-- [Great ML Stagnation on ML Street Talk](https://www.youtube.com/watch?v=BwhBtvCNwxo&ab_channel=MachineLearningStreetTalk)
 - [PyTorch 2023 Keynote](https://youtu.be/98enl3C3fps?si=N3oMZZ8XaibTcGvz&t=1662)
 - [GPU MODE @ GTC](https://www.youtube.com/watch?v=mdDVkBeFy9A&ab_channel=NVIDIADeveloper)
 - [GPU Optimization Workshop](https://www.youtube.com/watch?v=v_q2JTIqE20)
@@ -30,6 +29,7 @@ I have a bunch of talks on my own channel
 
 
 ### Non technical talks 
+- [Great ML Stagnation on ML Street Talk](https://www.youtube.com/watch?v=BwhBtvCNwxo&ab_channel=MachineLearningStreetTalk)
 - [Dealing with Career Stagnation (USF Data Institute)](https://www.youtube.com/watch?v=5Ldn_nCPNNQ&ab_channel=USFDataInstitute)
 - [2025 Blackwell Hackathon (SemiAnalysis)](https://semianalysis.com/2025-hackathon-eol/)
 - [Why ML Systems Matter](https://www.youtube.com/watch?v=GCtOq-YIyyQ)
