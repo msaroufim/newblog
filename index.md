@@ -6,10 +6,10 @@ title: Portfolio
 ## Recent Projects (2024-2025)
 
 - **[Project popcorn](https://gpu-mode.github.io/popcorn/)** - Training an LLM in public to generate efficient CUDA and Triton Kernels. With 4 key workstreams: Data, Infra, Science and Language.
-- **[GPU MODE (fka CUDA MODE)](https://discord.com/invite/gpumode)** - I cofounded this community with Andreas Kopf. Probably my most important project, a Discord community where people learn how GPUs work and then go on to ship real world projects.
-- **[torchao: PyTorch native quantization](https://github.com/pytorch/ao)** - I was a cofounder and tech lead where our goal was to make it trivial to explore and apply quantization algorithms.
+- **[GPU MODE (fka CUDA MODE)](https://discord.com/invite/gpumode)** - I cofounded this community with Andreas Köpf Probably my most important project, a Discord community where people learn how GPUs work and then go on to ship real world projects.
+- **[torchao: PyTorch native quantization](https://github.com/pytorch/ao)** - I was a cofounder and tech lead where our goal was to make it trivial to explore and apply quantization algorithms. We experimented with easy to apply quantization algorithms for training and inference, CPU offloading with fused CPU Adam, quantized Adam, distributed NF4 and whole bunch more fun stuff
 
-## Major Projects (2022-2023)
+## Other work at PyTorch
 
 - **[NeurIPS Hacker Cup AI challenge](https://www.facebook.com/codingcompetitions/hacker-cup)** - We opened up the popular Hacker cup competition for the first time ever to AI because we need harder evals.
 - **[The PyTorch fast series](https://pytorch.org/blog/accelerating-generative-ai-2/)** - Christian Puhrsch and Horace He pitched me getting SOTA fast inference working for LLMs, diffusion models and image models using PyTorch native. I was the TL for our benchmarking and evaluation efforts.
@@ -17,10 +17,10 @@ title: Portfolio
 - **[mlperf Algorithmic efficiency](https://github.com/mlcommons/algorithmic-efficiency)** - Played a small role making sure the PyTorch baselines were good but hey maybe we finally dethroned Adam.
 - **[Launch of PyTorch 2.0](https://pytorch.org/get-started/pytorch-2.0/)** - I was leading a workstream for Alpha users readiness and was the first person to ship compiled models both internally and externally. We also wrote a pretty nice ASPLOS paper.
 - **[torchserve](https://github.com/pytorch/serve)** - I was one of the lead maintainers for our inference server and it was used in prod by some massive workloads like Walmart Search. Touched most parts of it and it's where I learnt to respond to a lot of issues and PRs and go to practice some more on pytorch/examples.
-
-## Earlier Work (2018-2021)
-
 - **[torchX Ray Scheduler](https://github.com/pytorch/torchx)** - This is when I met Kiuk Chung and actually learnt how to write good code. We built a ray scheduler for PyTorch where you could launch large jobs from a notebook that was used in production by some Mega companies.
+  
+## Earlier work
+
 - **[The Great Stagnation](https://marksaroufim.substack.com/p/machine-learning-the-great-stagnation)** - The most popular thing I ever wrote, didn't age particularly well unfortunately but it was peak COVID, I was writing and livestreaming a lot.
 - **[Graph Neural Networks for healthcare](https://towardsdatascience.com/predictions-and-hopes-for-graph-ml-in-2021-6af2121c3e3d)** - When I learnt I could just reach out to amazing people like Michael Bronstein and got 5x speedups on GNN runs.
 - **[Local Updates](https://arxiv.org/abs/2012.03837)** - Parallel Training of Deep Networks with Local Updates on the Graphcore IPU. Was a true pleasure working with Misha, Seth and Luke who would all go on to do great things.
