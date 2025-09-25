@@ -14,18 +14,14 @@ Framework Desktop with 128GB RAM running Qwen3 32B via Ollama, Open WebUI for th
 ## Setup Commands
 
 ```bash
-# Install Ollama
 curl -fsSL https://ollama.com/install.sh | sh
 
-# Download the model
 ollama pull qwen3:32b
 
-# Run Open WebUI
 docker run -d --network=host -v open-webui:/app/backend/data \
   -e OLLAMA_BASE_URL=http://127.0.0.1:11434 --name open-webui \
   --restart always ghcr.io/open-webui/open-webui:main
 
-# Expose via Tailscale
 sudo tailscale serve --bg 8080
 ```
 
