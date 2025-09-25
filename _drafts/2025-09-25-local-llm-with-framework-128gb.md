@@ -9,11 +9,7 @@ Just set up Qwen3 32B running locally on my Framework Desktop with 128GB RAM. Th
 
 ## The Stack
 
-- **Hardware**: Framework Desktop with 128GB RAM (perfect for large models)
-- **Model**: Qwen3 32B (20GB on disk)
-- **Backend**: Ollama for model serving
-- **Frontend**: Open WebUI for the chat interface
-- **Access**: Tailscale for secure remote access
+Framework Desktop with 128GB RAM running Qwen3 32B via Ollama, Open WebUI for the chat interface, and Tailscale for remote access.
 
 ## Setup Commands
 
@@ -34,14 +30,5 @@ sudo tailscale serve --bg 8080
 ```
 
 Access from anywhere on your Tailscale network at `http://YOUR_MACHINE:8080`
-
-## Why This Matters
-
-- **No API costs** - Run unlimited queries
-- **Private** - Your data stays local
-- **Fast** - Low latency with local inference
-- **Always available** - No rate limits or downtime
-
-The Framework Desktop's 128GB RAM handles the 32B model comfortably with room for system overhead. Perfect setup for serious AI work without cloud dependencies.
 
 ![Open WebUI Interface](/assets/open-webui-screenshot.png)
