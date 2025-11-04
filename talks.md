@@ -14,6 +14,11 @@ I have a bunch of talks on my own channel
 ## Selected Talks & Appearances
 
 ### Technical talks
+- [PyTorch 2025 Keynote](https://youtu.be/XdORM2pkyH8?si=8UWRw556IRDdAiwg&t=1918)
+- [The State of Triton in OSS communities](https://youtu.be/dMGTUbCvdHk?si=oiXXUQtdgsW2fr_k)
+- [Hardware and Accelerators Panel](https://youtu.be/2QZ8Xd1rhXI?si=7qPW-oUblLLv-VjN)
+- [KernelBot: The world's first competitive GPU programming platform](https://www.youtube.com/watch?v=yoWC2gRxylU)
+- [AI kernel revolution panel](https://youtu.be/Iw4xKHPl7hI?si=I2HYhHpvzmAhSq6Y)
 - [PyTorch 2023 Keynote](https://youtu.be/98enl3C3fps?si=N3oMZZ8XaibTcGvz&t=1662)
 - [GPU MODE @ GTC](https://www.youtube.com/watch?v=mdDVkBeFy9A&ab_channel=NVIDIADeveloper)
 - [GPU Optimization Workshop](https://www.youtube.com/watch?v=v_q2JTIqE20)
