@@ -3,6 +3,9 @@ layout: default
 title: Portfolio
 ---
 
+Welcome habibi! I'm Mark Saroufim, I'm a [PyTorch](https://pytorch.org/) maintainer at Meta and a co-founder of the [GPU MODE community](https://discord.com/invite/gpumode). I've stuck around for so long because I really enjoy it all - science, math, performance, system design, writing, strategy and community building.
+
+
 ## Recent Projects (2024-2025)
 
 - **[Project popcorn](https://gpu-mode.github.io/popcorn/)** - Training an LLM in public to generate efficient CUDA and Triton Kernels. With 4 key workstreams: Data, Evals, Infra, Science.
