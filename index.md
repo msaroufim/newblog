@@ -5,9 +5,9 @@ title: Portfolio
 
 ## Recent Projects (2024-2025)
 
-- **[Project popcorn](https://gpu-mode.github.io/popcorn/)** - Training an LLM in public to generate efficient CUDA and Triton Kernels. With 4 key workstreams: Data, Infra, Science and Language.
+- **[Project popcorn](https://gpu-mode.github.io/popcorn/)** - Training an LLM in public to generate efficient CUDA and Triton Kernels. With 4 key workstreams: Data, Evals, Infra, Science.
 - **[GPU MODE (fka CUDA MODE)](https://discord.com/invite/gpumode)** - I cofounded this community with Andreas Köpf Probably my most important project, a Discord community where people learn how GPUs work and then go on to ship real world projects.
-- **[torchao: PyTorch native quantization](https://github.com/pytorch/ao)** - I was a cofounder and tech lead where our goal was to make it trivial to explore and apply quantization algorithms. We experimented with easy to apply quantization algorithms for training and inference, CPU offloading with fused CPU Adam, quantized Adam, distributed NF4 and whole bunch more fun stuff
+- **[torchao: PyTorch native quantization](https://github.com/pytorch/ao)** - I was a cofounder and tech lead where our goal was to make it trivial to explore and apply quantization algorithms.
 
 ## Other work at PyTorch
 
@@ -26,7 +26,4 @@ title: Portfolio
 - **[Local Updates](https://arxiv.org/abs/2012.03837)** - Parallel Training of Deep Networks with Local Updates on the Graphcore IPU. Was a true pleasure working with Misha, Seth and Luke who would all go on to do great things.
 - **[The Robot Overlord Manual](https://marksaroufim.medium.com/the-robot-overlord-manual-d4ee709155bc)** - I wrote a book about everything I learnt during my time at yuri.ai mostly focused on applied ML, RL and robotics.
 - **[yuri.ai: Game AI using RL](https://marksaroufim.medium.com/reinforcement-learning-a-declarative-paradigm-for-game-ai-41da1ee92cd9)** - It was truly magical for me seeing AI beat top humans at DOTA and Starcraft so I wanted to do the same for all games. This was unfortunately my most painful and least succesful project but I learnt a lot about game development and online communities. One saving grace was I became an amateur game developer and that meant a lot considering I've been a lifelong competitive gamer.
-
-## Academic Work (2014)
-
 - **[High Dimensional Geometry](https://arxiv.org/abs/1507.03338)** - Met two role models in Sanjoy Dasgupta and Charles Elkan where I got really deep into ML theory working on accelerating nearest neighbor search.
