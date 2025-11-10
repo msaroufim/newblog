@@ -1,6 +1,6 @@
 projects:
   - title: "Project popcorn"
-    description: "Training an LLM in public to generate efficient CUDA and Triton Kernels. With 4 key workstreams: Data, Infra, Science and Language." 
+    description: "Training an LLM in public to generate efficient CUDA and Triton Kernels. With 4 key workstreams: Data, Evals, Infra, Science." 
     date: 2025
     url: "https://gpu-mode.github.io/popcorn/"
 
