@@ -3,7 +3,7 @@ layout: default
 title: 1 line linux distro review
 ---
 
-Most developers (presumably people reading this blog) are familiar with linux on server I doubt many folks have tried maining a Linux machine with maybe the exception of Ubuntu. Over the past few weeks I've spent a lot of time reviving some of my older machines, installing many different distros and tweaking them and I wanted to share my 1-line reviews in case they help someone else looking to take the plunge.
+Most developers (presumably people reading this blog) are familiar with linux on server but I doubt many folks have tried maintaining a Linux machine with maybe the exception of Ubuntu. Over the past few weeks I've spent a lot of time reviving some of my older machines, installing many different distros and tweaking them and I wanted to share my 1-line reviews in case they help someone else looking to take the plunge.
 
 ## TL;DR what does Mark use
 * [Pop!_OS](https://system76.com/pop/): for my main desktop which I use both for local development of PyTorch and gaming
@@ -31,6 +31,8 @@ Your preferences with 1 and comfort level with 2 is primarily what'll determine 
 
 ## Outro
 
+If you dont know how to configure something, its almost certainly the case that Claude or Codex know how. 
+
 Finally I do want to give a special shoutout to [Tailscale](https://tailscale.com/), managing tons of machines at home can be clunky if you're lugging around a mouse, keyboard and monitor per device. What tailscale lets you do is after 2 commands you can easily ssh into your machines, configure them and set them up in you case you run into a rare issue. Another fancier choice would be [JetKVM](https://jetkvm.com/) where you plug in a little dongle into your computer, you get an IP on the display and then you can remote desktop with full GUI support using your browser.
 
-Overally it's been quite remarkable to me how good these distros and how strong the support has been despite them being mostly volunteer maintained projects. If we zoom out in the distant future, it's fairly obvious to me that Linux will be the main choice of developers, AI researchers and gamers so please try any of the above distros out, I promise you'll be pleasantly surprised.
+Overall it's been quite remarkable to me how good these distros and how strong the support has been despite them being mostly volunteer maintained projects. If we zoom out in the distant future, it's fairly obvious to me that Linux will be the main choice of developers, AI researchers and gamers so please try any of the above distros out, I promise you'll be pleasantly surprised.
