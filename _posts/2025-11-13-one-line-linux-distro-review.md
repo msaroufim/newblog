@@ -3,7 +3,7 @@ layout: default
 title: 1 line linux distro review
 ---
 
-Most developers (presumably people reading this blog) are familiar with linux on server but I doubt many folks have tried maintaining a Linux machine with maybe the exception of Ubuntu. Over the past few weeks I've spent a lot of time reviving some of my older machines, installing many different distros and tweaking them and I wanted to share my 1-line reviews in case they help someone else looking to take the plunge.
+Over the past few weeks I've spent a lot of time reviving some of my older machines, installing many different distros and tweaking them and I wanted to share my 1-line reviews in case they help someone else looking to take the plunge into Linux for desktop.
 
 ## TL;DR what does Mark use
 * [Pop!_OS](https://system76.com/pop/): for my main desktop which I use both for local development of PyTorch and gaming
