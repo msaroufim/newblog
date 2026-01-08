@@ -3,7 +3,7 @@ layout: default
 title: Portfolio
 ---
 
-Welcome habibi! I'm Mark Saroufim, I'm an MLSys engineer, a [PyTorch](https://pytorch.org/) maintainer at Meta and a co-founder of the [GPU MODE community](https://discord.com/invite/gpumode). I've stuck around for so long because I really enjoy it all - science, math, performance, system design, writing, strategy and community building.
+Welcome habibi! I'm Mark Saroufim, I'm an AI researcher and I work on [PyTorch](https://pytorch.org/) where I'm a maintainer at Meta and a co-founder of the [GPU MODE community](https://discord.com/invite/gpumode). I've stuck around for so long because I really enjoy it all - science, math, performance, system design, writing, strategy and community building.
 
 
 ## Recent Projects (2024-2025)
