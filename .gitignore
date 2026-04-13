@@ -2,5 +2,7 @@
 .bundle
 .sass-cache
 _site
+.venv
+__pycache__
 .DS_Store
 vendor

@@ -1,19 +1,12 @@
-Run the blog locally using 
+Run the blog locally using
 
 ```sh
-# Install ruby
-brew install ruby rbenv
+# Create/sync the environment
+uv sync
 
-# rbenv install 3.3.0
-rbenv global 3.3.0
+# Build the site into _site/
+uv run build.py
 
-# Install bundler (if you haven't)
-gem install bundler
-
-
-# Install dependencies
-bundle install
-
-# Run Jekyll with live reload
-bundle exec jekyll serve --livereload
+# Serve the generated site locally
+uv run python -m http.server 8000 --directory _site
 ```

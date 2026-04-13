@@ -205,8 +205,6 @@ header > nav#main-navigation a {
   text-transform: uppercase;
   border-radius: 0 0 5px 5px;
   border-bottom: 1px solid #333;
-  -webkit-transition: all ease-in-out 0.3s;
-  transition: all ease-in-out 0.3s;
 }
 
 header > nav#main-navigation a:hover,
@@ -217,8 +215,6 @@ header > nav#main-navigation a.current {
 
 header > nav#main-navigation a:hover {
   background-color: #333;
-  -webkit-transform: translateY(5px);
-  transform: translateY(5px);
 }
 
 header > nav#main-navigation a.current {
