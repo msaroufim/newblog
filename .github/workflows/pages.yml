@@ -1,5 +1,4 @@
-# Sample workflow for building and deploying a Jekyll site to GitHub Pages
-name: Deploy Jekyll site to Pages
+name: Deploy site to Pages
 
 on:
   # Runs on pushes targeting the default branch
@@ -20,26 +19,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Build job
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v6
         with:
-          ruby-version: '3.3.0' # Not needed with a .ruby-version file
-          bundler-cache: true # runs 'bundle install' and caches installed gems automatically
-          cache-version: 0 # Increment this number if you need to re-download cached gems
+          python-version: "3.12"
+          enable-cache: true
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v4
-      - run: bundle exec jekyll build
+      - name: Sync dependencies
+        run: uv sync --locked
+      - name: Build site
+        run: uv run build.py
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3 # Updated from v2 to v3
+        uses: actions/upload-pages-artifact@v3
 
-  # Deployment job
   deploy:
     environment:
       name: github-pages
