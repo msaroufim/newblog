@@ -5,15 +5,11 @@ title: Portfolio
 
 Welcome habibi! I'm Mark Saroufim, I'm an AI researcher. I recently cofounded a new lab called [Core Automation](https://coreauto.com/), and I'm a [PyTorch](https://pytorch.org/) maintainer and a co-founder of the [GPU MODE community](https://discord.com/invite/gpumode).
 
-
-## Recent Projects (2024-2025)
+## Work on PyTorch
 
 - **[Project popcorn](https://gpu-mode.github.io/popcorn/)** - Training an LLM in public to generate efficient CUDA and Triton Kernels. With 4 key workstreams: Data, Evals, Infra, Science.
 - **[GPU MODE (fka CUDA MODE)](https://discord.com/invite/gpumode)** - I cofounded this community with Andreas Köpf Probably my most important project, a Discord community where people learn how GPUs work and then go on to ship real world projects.
 - **[torchao: PyTorch native quantization](https://github.com/pytorch/ao)** - I was a cofounder and tech lead where our goal was to make it trivial to explore and apply quantization algorithms.
-
-## Other work at PyTorch
-
 - **[NeurIPS Hacker Cup AI challenge](https://www.facebook.com/codingcompetitions/hacker-cup)** - We opened up the popular Hacker cup competition for the first time ever to AI because we need harder evals.
 - **[The PyTorch fast series](https://pytorch.org/blog/accelerating-generative-ai-2/)** - Christian Puhrsch and Horace He pitched me getting SOTA fast inference working for LLMs, diffusion models and image models using PyTorch native. I was the TL for our benchmarking and evaluation efforts.
 - **[NeurIPS LLM efficiency challenge](https://llm-efficiency-challenge.github.io/)** - I was one of the 2 lead organizers along with Weiwei Yang for one of the most popular NeurIPS 2023 competition where you had to finetune an LLM in 1 day on 1 GPU.
