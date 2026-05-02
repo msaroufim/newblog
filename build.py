@@ -93,12 +93,9 @@ src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-
     </script>
   </body>
   <div style="text-align: center; margin-top: 2em; margin-bottom: 2em;">
-    <a href="https://medium.com/@marksaroufim" title="Medium" style="text-decoration: none; margin: 0 0.5em;">📝</a>
     <a href="https://github.com/msaroufim" title="Github" style="text-decoration: none; margin: 0 0.5em;">👨‍💻</a>
     <a href="https://twitter.com/marksaroufim" title="Twitter" style="text-decoration: none; margin: 0 0.5em;">🐦</a>
     <a href="http://marksaroufim.substack.com/" title="Substack" style="text-decoration: none; margin: 0 0.5em;">📧</a>
-    <a href="https://www.twitch.tv/marksaroufim" title="Twitch" style="text-decoration: none; margin: 0 0.5em;">🎮</a>
-    <a href="https://www.youtube.com/@marksaroufim" title="Youtube" style="text-decoration: none; margin: 0 0.5em;">🎥</a>
   </div>
 </html>
 
