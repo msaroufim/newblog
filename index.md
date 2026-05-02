@@ -3,7 +3,7 @@ layout: default
 title: Portfolio
 ---
 
-Welcome habibi! I'm Mark Saroufim, I'm an AI researcher. I recently cofounded a new lab called [Core Automation](https://coreauto.com/), and I'm a [PyTorch](https://pytorch.org/) maintainer and a co-founder of the [GPU MODE community](https://discord.com/invite/gpumode).
+Welcome habibi! I'm Mark Saroufim, I'm a cofounder at [Core Automation](https://coreauto.com/), [PyTorch](https://pytorch.org/) maintainer and cofounder of [GPU MODE](https://discord.com/invite/gpumode).
 
 ## Work on PyTorch
 
@@ -18,7 +18,7 @@ Welcome habibi! I'm Mark Saroufim, I'm an AI researcher. I recently cofounded a 
 - **[torchserve](https://github.com/pytorch/serve)** - I was one of the lead maintainers for our inference server and it was used in prod by some massive workloads like Walmart Search. Touched most parts of it and it's where I learnt to respond to a lot of issues and PRs and go to practice some more on pytorch/examples.
 - **[torchX Ray Scheduler](https://github.com/pytorch/torchx)** - This is when I met Kiuk Chung and actually learnt how to write good code. We built a ray scheduler for PyTorch where you could launch large jobs from a notebook that was used in production by some Mega companies.
   
-## Earlier work
+## Before PyTorch days
 
 - **[The Great Stagnation](https://marksaroufim.substack.com/p/machine-learning-the-great-stagnation)** - The most popular thing I ever wrote, didn't age particularly well unfortunately but it was peak COVID, I was writing and livestreaming a lot.
 - **[Graph Neural Networks for healthcare](https://towardsdatascience.com/predictions-and-hopes-for-graph-ml-in-2021-6af2121c3e3d)** - When I learnt I could just reach out to amazing people like Michael Bronstein and got 5x speedups on GNN runs.
