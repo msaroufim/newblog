@@ -185,7 +185,11 @@
   .lab-canvas{position:relative;background:var(--paper-2);border:1px solid var(--line);
     border-radius:var(--radius);padding:10px}
   .lab-canvas canvas{display:block;width:100%;height:auto;border-radius:8px;cursor:crosshair}
-  .lab-hint{position:absolute;left:18px;bottom:16px;font-family:var(--mono);font-size:11px;
+  .lab-key{margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--ink-faint);text-align:center}
+  .tog{display:flex;align-items:center;gap:7px;margin-top:10px;font-family:var(--mono);
+    font-size:12px;color:var(--ink-soft);cursor:pointer;user-select:none}
+  .tog input{accent-color:var(--green);margin:0}
+  .lab-hint{position:absolute;left:18px;bottom:46px;font-family:var(--mono);font-size:11px;
     color:var(--ink-faint);background:rgba(243,245,243,.88);padding:2px 8px;border-radius:6px;pointer-events:none}
   .lab-side{display:flex;flex-direction:column;gap:12px}
   .lab-block{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:12px 13px}
@@ -314,13 +318,16 @@
     only <code>f(g, state)</code> differs. The structured branch appears through its honest 2-D stand-ins:
     <b>Full-matrix</b> keeps a real 2×2 accumulator <code>G = Σ g·gᵀ</code> (the full-matrix-AdaGrad /
     Shampoo idea), and <b>Muon</b>'s Ortho(M) on a 1×2 “matrix” reduces to unit-norm momentum.
-    <span style="color:var(--green-deep)">+</span> marks the minima. Click the map to move the start point.
-    (Per-optimizer step scaling is applied so one η dial is fair to all.)</p>
+    <span style="color:var(--green-deep)">+</span> marks the minima. <b>Reading the map:</b> you're looking
+    straight down at the loss surface. Each line joins points of equal loss — tightly packed lines mean steep,
+    the shading darkens uphill, and the small arrows point downhill. Hover to read the loss under the cursor;
+    click to move the start point. (Per-optimizer step scaling is applied so one η dial is fair to all.)</p>
   <div class="labgrid">
-    <div class="lab-canvas"><canvas id="labcv" width="760" height="620" aria-label="Optimizer trajectories racing on a 2-D loss landscape"></canvas>
-      <div class="lab-hint">click to set a new start point</div></div>
+    <div class="lab-canvas"><canvas id="labcv" width="760" height="620" aria-label="Top-down contour map of a 2-D loss landscape with optimizer trajectories"></canvas>
+      <div class="lab-hint">click to set a new start point</div>
+      <div class="lab-key">top-down view · lines join equal loss · darker = higher · arrows point downhill</div></div>
     <div class="lab-side">
-      <div class="lab-block"><h4>Landscape</h4><div class="seg" id="lab-lands"></div></div>
+      <div class="lab-block"><h4>Landscape</h4><div class="seg" id="lab-lands"></div><label class="tog"><input type="checkbox" id="lab-arr" checked> downhill arrows</label></div>
       <div class="lab-block"><h4>Optimizers · tap to toggle</h4><div class="optlist" id="lab-opts"></div></div>
       <div class="lab-block sliders">
         <label>step size η = <b id="lab-lrv">0.020</b></label>
@@ -918,8 +925,26 @@ function finishNow(){
   needs=true;
 }
 
+let showArrows=true;
+function drawArrows(){
+  ctx.strokeStyle='rgba(70,88,100,.42)';ctx.fillStyle='rgba(70,88,100,.42)';ctx.lineWidth=1.2;
+  const step=56,L=9;
+  for(let px=step/2;px<W;px+=step)for(let py=step/2;py<H;py+=step){
+    const g=land.g(IX(px),IY(py));
+    const m=Math.hypot(g[0],g[1]);if(m<1e-6)continue;
+    const sx=-g[0]/m, sy=g[1]/m;          // downhill, y flipped for screen
+    const x2=px+sx*L, y2=py+sy*L;
+    ctx.beginPath();ctx.moveTo(px-sx*L*.45,py-sy*L*.45);ctx.lineTo(x2,y2);ctx.stroke();
+    const a=Math.atan2(sy,sx);
+    ctx.beginPath();ctx.moveTo(x2,y2);
+    ctx.lineTo(x2-5*Math.cos(a-.42),y2-5*Math.sin(a-.42));
+    ctx.lineTo(x2-5*Math.cos(a+.42),y2-5*Math.sin(a+.42));
+    ctx.closePath();ctx.fill();
+  }
+}
 function draw(){
   ctx.drawImage(field(),0,0);
+  if(showArrows)drawArrows();
   const st=startPt||land.start;
   ctx.fillStyle='#56656f';
   ctx.beginPath();ctx.arc(X(st[0]),Y(st[1]),4,0,7);ctx.fill();
@@ -984,6 +1009,15 @@ sgIn.oninput=()=>{sigma=sgIn.value/100;sgV.textContent=sigma.toFixed(2);restart(
 const runBtn=document.getElementById('lab-run');
 runBtn.onclick=()=>{paused=!paused;runBtn.textContent=paused?'Play':'Pause';};
 document.getElementById('lab-rst').onclick=()=>restart();
+const arrIn=document.getElementById('lab-arr');
+if(arrIn)arrIn.onchange=()=>{showArrows=arrIn.checked;needs=true;};
+const hintEl=document.querySelector('.lab-hint');
+const HINT0='click to set a new start point';
+cv.addEventListener('mousemove',e=>{
+  const r=cv.getBoundingClientRect();
+  const x=IX((e.clientX-r.left)/r.width*W),y=IY((e.clientY-r.top)/r.height*H);
+  hintEl.textContent='loss here = '+fmtLoss(land.f(x,y))+' · click to start';});
+cv.addEventListener('mouseleave',()=>{hintEl.textContent=HINT0;});
 cv.addEventListener('click',e=>{
   const r=cv.getBoundingClientRect();
   startPt=[IX((e.clientX-r.left)/r.width*W),IY((e.clientY-r.top)/r.height*H)];
