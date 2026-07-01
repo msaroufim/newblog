@@ -145,6 +145,19 @@
   .formula .lab{color:var(--ink-faint);font-size:11.5px}
   .formula sub,.formula sup{font-size:.72em}
 
+  .why{margin:10px 18px 0}
+  .why summary{cursor:pointer;font-family:var(--mono);font-size:11.5px;color:var(--green-deep);
+    font-weight:600;list-style:none;display:inline-flex;align-items:center;gap:7px;
+    padding:3px 11px;border:1px solid var(--line);border-radius:20px;background:#fff;user-select:none}
+  .why summary::-webkit-details-marker{display:none}
+  .why summary::after{content:"▸";font-size:10px;transition:transform .15s}
+  .why[open] summary::after{transform:rotate(90deg)}
+  .why summary:hover{border-color:var(--green)}
+  .why-body{margin:9px 2px 0;font-family:var(--body);font-size:13px;line-height:1.55;color:var(--ink-soft)}
+  .why-body code{font-family:var(--mono);font-size:.9em;background:var(--paper-2);
+    border:1px solid var(--line);border-radius:5px;padding:0 4px;color:var(--ink)}
+  .why-body b{color:var(--ink);font-weight:600}
+
   .code-wrap{margin:13px 18px 18px;background:var(--code-bg);border-radius:11px;overflow:hidden;
     border:1px solid #dde3e1}
   .code-top{display:flex;align-items:center;gap:7px;padding:9px 13px;background:var(--code-bg2);
@@ -167,8 +180,8 @@
 
 
   /* ---------- LAB ---------- */
-  .lab{display:grid;grid-template-columns:minmax(0,1fr) 292px;gap:14px;margin-top:14px;align-items:start}
-  @media(max-width:860px){.lab{grid-template-columns:1fr}}
+  .labgrid{display:grid;grid-template-columns:minmax(0,1fr) 292px;gap:14px;margin-top:14px;align-items:start}
+  @media(max-width:860px){.labgrid{grid-template-columns:1fr}}
   .lab-canvas{position:relative;background:var(--paper-2);border:1px solid var(--line);
     border-radius:var(--radius);padding:10px}
   .lab-canvas canvas{display:block;width:100%;height:auto;border-radius:8px;cursor:crosshair}
@@ -303,7 +316,7 @@
     Shampoo idea), and <b>Muon</b>'s Ortho(M) on a 1×2 “matrix” reduces to unit-norm momentum.
     <span style="color:var(--green-deep)">+</span> marks the minima. Click the map to move the start point.
     (Per-optimizer step scaling is applied so one η dial is fair to all.)</p>
-  <div class="lab">
+  <div class="labgrid">
     <div class="lab-canvas"><canvas id="labcv" width="760" height="620" aria-label="Optimizer trajectories racing on a 2-D loss landscape"></canvas>
       <div class="lab-hint">click to set a new start point</div></div>
     <div class="lab-side">
@@ -549,7 +562,7 @@ const SECTIONS=[
 
  {idx:"03",title:"First + second moment",sub:"Keep both tensors. This is where the modern defaults live — Adam and its side branches.",
   cards:[
-   {id:"c-adam",name:"Adam",line:["RMSProp",`+ momentum + bias-correction<a class="fnref" href="#fn-bias">4</a>`],
+   {id:"c-adam",name:"Adam",line:["RMSProp",`momentum + bias-correction<a class="fnref" href="#fn-bias">4</a>`],
     state:[[`m — first moment<a class="fnref" href="#fn-first">2</a>`,"new"],[`v — EMA g² (2nd<a class="fnref" href="#fn-second">3</a>)`,"inh"]],
     formula:`m ← β₁m + (1−β₁)g&nbsp;&nbsp;<span class="lab">momentum</span><br>v ← <span class="hl">β₂v + (1−β₂)g²</span>&nbsp;<span class="lab">RMSProp</span><br>θ ← θ − η·m̂ ⁄ (√v̂ + ε)`,
     code:[
@@ -563,7 +576,9 @@ const SECTIONS=[
     ]},
    {id:"c-adamw",name:"AdamW",line:["Adam","decoupled weight decay"],
     state:[["m, v","inh"]],
-    formula:`<span class="lab">decay θ directly, off the gradient path</span><br>θ ← <span class="hl">(1 − η·λ)·θ</span>&nbsp;then Adam step<br><span class="lab">why: L2-in-the-gradient gets divided by √v like everything else — big-gradient weights barely decay. Decoupling restores uniform decay.</span>`,
+    formula:`<span class="lab">decay θ directly, off the gradient path</span><br>θ ← <span class="hl">(1 − η·λ)·θ</span>&nbsp;then Adam step`,
+    noteLabel:"why decouple",
+    note:`With Adam, an L2 term inside the gradient gets divided by <code>√v</code> like everything else — so weights with large, active gradients barely decay at all. Applying the decay directly to θ, off the gradient path, restores uniform, true weight decay.`,
     code:[
       L("ctx",`    g = p.grad;  t += ${G.num('1')}`),
       L("add",`    p.${G.fn('mul_')}(${G.num('1')} - lr*wd)                ${G.cm('# decoupled decay')}`),
@@ -572,7 +587,9 @@ const SECTIONS=[
     ]},
    {id:"c-lion",name:"Lion",line:["Adam","drop v, take the sign"],
     state:[["m — first moment only","inh"],["v dropped","none"]],
-    formula:`u ← <span class="hl">sign</span>(β₁m + (1−β₁)g)&nbsp;<span class="lab">no √v</span><br>θ ← θ − η·u&nbsp;;&nbsp; m ← β₂m + (1−β₂)g<br><span class="lab">sign(x) = x ⁄ √x² — Adam with the v-EMA collapsed to the instant. Same instinct as Muon, per coordinate instead of per matrix.</span>`,
+    formula:`u ← <span class="hl">sign</span>(β₁m + (1−β₁)g)&nbsp;<span class="lab">no √v</span><br>θ ← θ − η·u&nbsp;;&nbsp; m ← β₂m + (1−β₂)g`,
+    noteLabel:"the connection",
+    note:`<code>sign(x) = x ⁄ √x²</code> — so Lion is Adam with the v-EMA collapsed to the current instant (and no ε). It's also the same instinct as Muon — keep the direction, flatten the magnitudes — applied <b>per coordinate</b> instead of per matrix.`,
     code:[
       L("ctx",`    g = p.grad`),
       L("ctx",`    m = state[p][${G.st("'m'")}]`),
@@ -586,7 +603,9 @@ const SECTIONS=[
   cards:[
    {id:"c-adafactor",name:"Adafactor",line:["Adam / RMSProp","factor v into row × col"],
     state:[["r — row stats","new"],["c — col stats","new"],["full v avoided","none"]],
-    formula:`<span class="lab">for a matrix g (R×C), keep two vectors</span><br>r ← β₂r + (1−β₂)·mean<sub>col</sub>(g²)<br>c ← β₂c + (1−β₂)·mean<sub>row</sub>(g²)<br>v̂ ← <span class="hl">(r ⊗ c) ⁄ Σr</span>&nbsp;<span class="lab">≈ full v — the optimal rank-1 fit, R·C floats stored as R + C</span>`,
+    formula:`<span class="lab">for a matrix g (R×C), keep two vectors</span><br>r ← β₂r + (1−β₂)·mean<sub>col</sub>(g²)<br>c ← β₂c + (1−β₂)·mean<sub>row</sub>(g²)<br>v̂ ← <span class="hl">(r ⊗ c) ⁄ Σr</span>&nbsp;<span class="lab">≈ full v</span>`,
+    noteLabel:"the rank-1 trick",
+    note:`<code>v̂ = (r ⊗ c) ⁄ Σr</code> is the optimal rank-1 (outer-product) fit to the full second-moment matrix — R·C numbers reconstructed from just R + C stored ones. The compression lives entirely on <b>v</b>; momentum is simply dropped, not compressed.`,
     code:[
       L("ctx",`    g = p.grad                      ${G.cm('# shape (R, C)')}`),
       L("chg",`    r = state[p][${G.st("'r'")}]            ${G.cm('# len R, not R·C')}`),
@@ -612,7 +631,9 @@ const SECTIONS=[
     ]},
    {id:"c-shampoo",name:"Shampoo",line:["full-matrix AdaGrad","Kronecker-factor the Σ g·gᵀ accumulator"],
     state:[["L, R — Gram matrices","new"]],
-    formula:`L ← L + g·gᵀ&nbsp;&nbsp;R ← R + gᵀ·g&nbsp;<span class="lab">AdaGrad's Σ g², grown into matrices</span><br>θ ← θ − η·<span class="hl">L<sup>−¼</sup>·g·R<sup>−¼</sup></span>&nbsp;<span class="lab">−¼ each side ⇒ −½ combined, matching AdaGrad's 1⁄√s</span>`,
+    formula:`L ← L + g·gᵀ&nbsp;&nbsp;R ← R + gᵀ·g<br>θ ← θ − η·<span class="hl">L<sup>−¼</sup>·g·R<sup>−¼</sup></span>`,
+    noteLabel:"the AdaGrad link",
+    note:`L and R play the role of AdaGrad's <code>Σ g²</code> accumulator, grown into matrices. The two −¼ powers compose to −½ across the whole update — matching AdaGrad's <code>1⁄√s</code> — which is why Shampoo is best read as <b>full-matrix AdaGrad made affordable</b> by Kronecker-factoring the giant accumulator into a left and right matrix per layer.`,
     code:[
       L("ctx",`    g = p.grad                      ${G.cm('# matrix')}`),
       L("add",`    Lp = state[p][${G.st("'L'")}]; Rp = state[p][${G.st("'R'")}]`),
@@ -622,7 +643,7 @@ const SECTIONS=[
     ]},
    {id:"c-kfac",name:"K-FAC",line:["SGD",`Kronecker-factored Fisher<a class="fnref" href="#fn-fisher">9</a>`],
     state:[["A, G — layer factors","new"]],
-    formula:`<span class="lab">approx Fisher F ≈ A ⊗ G per layer → natural gradient</span><br>θ ← θ − η·<span class="hl">A⁻¹·g·G⁻¹</span>`,
+    formula:`<span class="lab">Fisher F ≈ A ⊗ G → natural gradient</span><br>θ ← θ − η·<span class="hl">A⁻¹·g·G⁻¹</span>`,
     code:[
       L("ctx",`    g = grad_W                      ${G.cm('# layer weight')}`),
       L("add",`    A = ${G.fn('cov')}(activations)         ${G.cm('# input side')}`),
@@ -632,7 +653,7 @@ const SECTIONS=[
     ]},
    {id:"c-lbfgs",name:"L-BFGS",line:["BFGS","limited-memory: keep last m pairs"],
     state:[["{sᵢ, yᵢ} secant pairs","new"],["deterministic · full-batch","det"]],
-    formula:`<span class="lab">secant condition<a class="fnref" href="#fn-secant">8</a></span>&nbsp; B·s = y&nbsp;&nbsp;<span class="lab">s=Δθ, y=Δg</span><br>θ ← θ − t·<span class="hl">H⁻¹·g</span>&nbsp;<span class="lab">H⁻¹ rebuilt from (s,y)</span>`,
+    formula:`<span class="lab">secant condition<a class="fnref" href="#fn-secant">8</a></span>&nbsp; B·s = y&nbsp;&nbsp;<span class="lab">s=Δθ, y=Δg</span><br>θ ← θ − t·<span class="hl">H⁻¹·g</span>&nbsp;<span class="lab">H⁻¹ from (s,y)</span>`,
     code:[
       L("ctx",`    g = p.grad`),
       L("add",`    s_hist, y_hist = state[${G.st("'sy'")}]   ${G.cm('# last m (Δθ, Δg)')}`),
@@ -643,7 +664,9 @@ const SECTIONS=[
     ]},
    {id:"c-muon",name:"Muon",line:["Momentum + Shampoo",`orthogonalize<a class="fnref" href="#fn-ortho">6</a> via Newton–Schulz<a class="fnref" href="#fn-ns">7</a>`],
     state:[["m — first moment","inh"],[`Newton–Schulz orthogonalize<a class="fnref" href="#fn-ns">7</a>`,"new"],["no v · no accumulation","none"]],
-    formula:`M ← μ·M + G&nbsp;&nbsp;<span class="lab">momentum, kept as a matrix</span><br>W ← W − η·<span class="hl">Ortho(M)</span><br><span class="lab">Ortho(M) := UVᵀ<a class="fnref" href="#fn-ortho">6</a> where M = UΣVᵀ — keep the directions, set every singular value to 1. Equals (MMᵀ)<sup>−½</sup>·M.</span><br><span class="lab">exactly Shampoo with L=MMᵀ, R=MᵀM and no accumulation: L<sup>−¼</sup>·M·R<sup>−¼</sup> = UVᵀ</span>`,
+    formula:`M ← μ·M + G&nbsp;&nbsp;<span class="lab">matrix momentum</span><br>W ← W − η·<span class="hl">Ortho(M)</span> = UVᵀ&nbsp;&nbsp;<span class="lab">M = UΣVᵀ</span>`,
+    noteLabel:"Ortho(M) & the Shampoo identity",
+    note:`<b>Ortho(M)</b><a class="fnref" href="#fn-ortho">6</a> keeps M's singular directions and sets every singular value to 1 — the nearest orthogonal matrix, equal to <code>(MMᵀ)<sup>−½</sup>·M</code>. Newton–Schulz<a class="fnref" href="#fn-ns">7</a> approximates it with ~5 matmul-only passes, no SVD. And the Shampoo link is <b>exact</b>: plug the instantaneous <code>L = MMᵀ</code>, <code>R = MᵀM</code> into Shampoo's <code>L<sup>−¼</sup>·M·R<sup>−¼</sup></code> and the algebra collapses to precisely <code>UVᵀ</code> — Muon is accumulation-free Shampoo, plus momentum.`,
     code:[
       L("ctx",`    g = p.grad                      ${G.cm('# 2-D weight only')}`),
       L("ctx",`    m = state[p][${G.st("'m'")}]`),
@@ -684,6 +707,7 @@ const SECTIONS=[
         </div>
         <div class="state">${chips}</div>
         <div class="formula">${c.formula}</div>
+        ${c.note?`<details class="why"><summary>${c.noteLabel||'why'}</summary><div class="why-body">${c.note}</div></details>`:''}
         <div class="code-wrap">
           <div class="code-top"><i class="pip"></i><i class="pip"></i><i class="pip"></i><span>step.py</span></div>
           <pre>${lines}</pre>
