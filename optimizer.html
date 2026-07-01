@@ -165,6 +165,46 @@
   .cm{color:var(--code-dim);font-style:italic}
   .kw{color:var(--code-kw)}.num{color:var(--code-num)}.fn{color:var(--code-fn)}.st{color:#a8541a}
 
+
+  /* ---------- LAB ---------- */
+  .lab{display:grid;grid-template-columns:minmax(0,1fr) 292px;gap:14px;margin-top:14px;align-items:start}
+  @media(max-width:860px){.lab{grid-template-columns:1fr}}
+  .lab-canvas{position:relative;background:var(--paper-2);border:1px solid var(--line);
+    border-radius:var(--radius);padding:10px}
+  .lab-canvas canvas{display:block;width:100%;height:auto;border-radius:8px;cursor:crosshair}
+  .lab-hint{position:absolute;left:18px;bottom:16px;font-family:var(--mono);font-size:11px;
+    color:var(--ink-faint);background:rgba(243,245,243,.88);padding:2px 8px;border-radius:6px;pointer-events:none}
+  .lab-side{display:flex;flex-direction:column;gap:12px}
+  .lab-block{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);padding:12px 13px}
+  .lab-block h4{margin:0 0 8px;font-family:var(--mono);font-size:11px;letter-spacing:.09em;
+    text-transform:uppercase;color:var(--ink-soft)}
+  .seg{display:flex;gap:6px;flex-wrap:wrap}
+  .seg button{font-family:var(--mono);font-size:12px;padding:5px 10px;border-radius:8px;
+    border:1px solid var(--line);background:#fff;color:var(--ink-soft);cursor:pointer}
+  .seg button.on{border-color:var(--green);color:var(--green-deep);background:rgba(26,138,79,.08);font-weight:600}
+  .optlist{display:flex;flex-direction:column;gap:4px}
+  .opt{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12.5px;
+    padding:4px 9px;border-radius:8px;border:1px solid var(--line);background:#fff;
+    color:var(--ink-faint);cursor:pointer;user-select:none}
+  .opt .od{width:10px;height:10px;border-radius:3px;background:var(--line);flex:0 0 auto}
+  .opt.on{color:var(--ink)}
+  .opt:focus-visible{outline:2px solid var(--green);outline-offset:1px}
+  .opt .val{margin-left:auto;font-size:11px;color:var(--ink-faint)}
+  .opt.on .val{color:var(--ink-soft)}
+  .sliders label{display:block;font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin:8px 0 3px}
+  .sliders label b{color:var(--ink);font-weight:600}
+  .sliders input[type=range]{width:100%;accent-color:var(--green)}
+  .lab-btns{display:flex;gap:8px;margin-top:12px}
+  .lab-btns button{flex:1;font-family:var(--mono);font-size:12.5px;padding:7px 0;border-radius:8px;
+    border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+  .lab-btns button:hover{border-color:var(--green)}
+  .try{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:9px}
+  .try li{position:relative;padding-left:22px;font-size:13.5px;color:var(--ink-soft);max-width:88ch}
+  .try li::before{content:"\2192";position:absolute;left:0;color:var(--green-deep);font-family:var(--mono)}
+  .try b{color:var(--ink);font-weight:600}
+  .ortho-fig{grid-column:2;margin:10px 0 0}
+  .ortho-fig canvas{display:block;width:100%;max-width:430px;height:auto;background:#fff;
+    border:1px solid var(--line);border-radius:10px}
   /* ---------- FOOTNOTES ---------- */
   .fnref{font-family:var(--mono);font-size:.68em;vertical-align:super;line-height:0;
     color:var(--green-deep);text-decoration:none;font-weight:700;padding:0 1px}
@@ -253,6 +293,41 @@
   </div>
 </div>
 
+
+<!-- ================= PLAYGROUND ================= -->
+<div class="wrap">
+  <div class="section-head"><span class="idx">LAB</span><h2>Race them on a landscape</h2></div>
+  <p class="section-sub">The master equation, running live: same start, same landscape, same η dial —
+    only <code>f(g, state)</code> differs. The structured branch appears through its honest 2-D stand-ins:
+    <b>Full-matrix</b> keeps a real 2×2 accumulator <code>G = Σ g·gᵀ</code> (the full-matrix-AdaGrad /
+    Shampoo idea), and <b>Muon</b>'s Ortho(M) on a 1×2 “matrix” reduces to unit-norm momentum.
+    <span style="color:var(--green-deep)">+</span> marks the minima. Click the map to move the start point.
+    (Per-optimizer step scaling is applied so one η dial is fair to all.)</p>
+  <div class="lab">
+    <div class="lab-canvas"><canvas id="labcv" width="760" height="620" aria-label="Optimizer trajectories racing on a 2-D loss landscape"></canvas>
+      <div class="lab-hint">click to set a new start point</div></div>
+    <div class="lab-side">
+      <div class="lab-block"><h4>Landscape</h4><div class="seg" id="lab-lands"></div></div>
+      <div class="lab-block"><h4>Optimizers · tap to toggle</h4><div class="optlist" id="lab-opts"></div></div>
+      <div class="lab-block sliders">
+        <label>step size η = <b id="lab-lrv">0.020</b></label>
+        <input type="range" id="lab-lr" min="0" max="100" value="59" aria-label="step size">
+        <label>gradient noise σ = <b id="lab-sgv">0.00</b></label>
+        <input type="range" id="lab-sg" min="0" max="150" value="0" aria-label="gradient noise">
+        <div class="lab-btns"><button id="lab-run">Pause</button><button id="lab-rst">Restart</button></div>
+      </div>
+    </div>
+  </div>
+  <ul class="try">
+    <li><b>Ravine:</b> Momentum piles up speed and swings wide at the bend; Adam and Muon hug it. That's a raw first moment vs a first moment with a scale.</li>
+    <li><b>Tilted bowl:</b> Adam still zigzags — a diagonal scale can't rotate. Turn on <b>Full-matrix</b> and watch it cut straight along the tilted axis. That's the entire pitch of section 05 in one picture.</li>
+    <li><b>Slide σ up:</b> SGD gets drunk while the EMA methods glide (footnotes 1–2, live). Then enable <b>L-BFGS</b>: untouchable at σ = 0, broken the moment noise corrupts its (s, y) pairs — exactly why it's the dashed node.</li>
+    <li><b>Lion &amp; Muon</b> take fixed-magnitude steps (sign / unit-norm), so they never fully sit still — the real ones lean on lr decay and weight decay to land. And <b>AdamW</b> makes decay visible: it parks slightly short of the <span style="color:var(--green-deep)">+</span>, dragged toward the origin.</li>
+    <li><b>Crank η</b> to ≥0.1 on the ravine: SGD flies off (✗) while the adaptive family shrugs — per-parameter scaling as a stabilizer.</li>
+    <li><b>Four minima:</b> from the same start, different optimizers land in <i>different</i> basins — the optimizer isn't a neutral pipe to “the” solution, it's part of what gets learned.</li>
+  </ul>
+</div>
+
 <div class="wrap" id="cardzone"></div>
 
 <div class="wrap">
@@ -271,7 +346,7 @@
       <li id="fn-precond"><span class="term">Preconditioner</span>
         <p>Any matrix P in <code>θ ← θ − η·P·g</code> that reshapes the gradient before stepping. The ideal is Newton's <code>P = H⁻¹</code> (inverse Hessian) — perfect but unaffordable. Adam/RMSProp use a <i>diagonal</i> P (<code>1/(√v+ε)</code> per coordinate); Shampoo, K-FAC and PSGD spend more memory on <i>structured</i> full matrices that also capture correlations between parameters.</p></li>
       <li id="fn-ortho"><span class="term">Orthogonalization — Ortho(M)</span>
-        <p>Write the SVD <code>M = UΣVᵀ</code>: U, V hold the directions, Σ the magnitudes. Then <code>Ortho(M) := UVᵀ</code> — same directions, every singular value set to 1. It's the nearest orthogonal(-ish) matrix to M, and equivalently <code>(MMᵀ)<sup>−½</sup>·M</code>. The point: a raw momentum matrix is dominated by a few large singular directions; orthogonalizing makes the update push equally along <i>all</i> of them.</p></li>
+        <p>Write the SVD <code>M = UΣVᵀ</code>: U, V hold the directions, Σ the magnitudes. Then <code>Ortho(M) := UVᵀ</code> — same directions, every singular value set to 1. It's the nearest orthogonal(-ish) matrix to M, and equivalently <code>(MMᵀ)<sup>−½</sup>·M</code>. The point: a raw momentum matrix is dominated by a few large singular directions; orthogonalizing makes the update push equally along <i>all</i> of them.</p><figure class="ortho-fig"><canvas id="ortho-cv" width="430" height="168" aria-label="Animation: a matrix maps the unit circle to an ellipse; Ortho squashes it back to the circle"></canvas></figure></li>
       <li id="fn-ns"><span class="term">Newton–Schulz iteration</span>
         <p>Computing UVᵀ by actual SVD is slow and GPU-unfriendly. Newton–Schulz instead iterates a fixed odd matrix polynomial, <code>X ← a·X + b·(XXᵀ)X + c·(XXᵀ)²X</code>, on the normalized momentum. Each pass squashes all singular values toward 1, so ~5 iterations of pure matmuls (bf16-safe) ≈ Ortho(M) — no decomposition ever computed. Muon uses tuned coefficients (a≈3.44, b≈−4.78, c≈2.03) that converge fast without needing high precision.</p></li>
       <li id="fn-secant"><span class="term">Secant / quasi-Newton</span>
@@ -618,4 +693,348 @@ const SECTIONS=[
     zone.appendChild(grid);
   });
 })();
+</script>
+<script>
+/* ============================================================
+   3) PLAYGROUND — race optimizers on a 2-D loss landscape
+   ============================================================ */
+/*LAB-CORE-START*/
+const randn=(()=>{let sp=false,v=0;return()=>{
+  if(sp){sp=false;return v;}
+  let u=0;do{u=Math.random();}while(u===0);const w=Math.random();
+  const r=Math.sqrt(-2*Math.log(u));v=r*Math.sin(2*Math.PI*w);sp=true;
+  return r*Math.cos(2*Math.PI*w);};})();
+
+function quadLand(cx,cy,ang,l1,l2){
+  const c=Math.cos(ang),s=Math.sin(ang);
+  const a=c*c*l1+s*s*l2, b=c*s*(l1-l2), d=s*s*l1+c*c*l2;
+  return{f:(x,y)=>{const u=x-cx,v=y-cy;return .5*(a*u*u+2*b*u*v+d*v*v);},
+         g:(x,y)=>{const u=x-cx,v=y-cy;return[a*u+b*v,b*u+d*v];}};
+}
+const QL=quadLand(1.1,.7,.55,.6,12);
+const LANDS={
+ ravine:{label:"ravine",dom:[-2.27,2.27,-0.7,3.0],start:[-1.7,2.7],gs:3,mins:[[1,1]],
+  f:(x,y)=>{const a=1-x,b=y-x*x;return a*a+4*b*b;},
+  g:(x,y)=>{const b=y-x*x;return[-2*(1-x)-16*x*b,8*b];}},
+ bowl:{label:"tilted bowl",dom:[-2.5,3.02,-1.9,2.6],start:[-2,-1.5],gs:3,mins:[[1.1,.7]],
+  f:QL.f,g:QL.g},
+ himmel:{label:"four minima",dom:[-6.13,6.13,-5,5],start:[.1,-4.4],gs:3,
+  mins:[[3,2],[-2.805,3.131],[-3.779,-3.283],[3.584,-1.848]],
+  f:(x,y)=>{const A=x*x+y-11,B=x+y*y-7;return(A*A+B*B)/60;},
+  g:(x,y)=>{const A=x*x+y-11,B=x+y*y-7;return[(4*x*A+2*B)/60,(2*A+4*y*B)/60];}},
+};
+const EPS=1e-8;
+function msqrtInv(G){ // (G+eps I)^(-1/2) for SPD 2x2, closed form
+  const a=G[0]+1e-6,b=G[1],d=G[2]+1e-6;
+  const det=Math.max(a*d-b*b,1e-12), tr=a+d, sd=Math.sqrt(det);
+  const t=Math.sqrt(Math.max(tr+2*sd,1e-12));
+  const sa=(a+sd)/t, sb=b/t, sdd=(d+sd)/t;   // S = sqrt(G)
+  const idet=1/(sa*sdd-sb*sb);
+  return[sdd*idet,-sb*idet,sa*idet];          // S^-1
+}
+const OPTS=[
+ {id:'sgd',n:'SGD',c:'#16222c',m:1,
+  mk:()=>({}),
+  st:(s,p,g,lr)=>{p[0]-=lr*g[0];p[1]-=lr*g[1];}},
+ {id:'mom',n:'Momentum',c:'#2c5f86',m:.16,
+  mk:()=>({v:[0,0]}),
+  st:(s,p,g,lr)=>{s.v[0]=.9*s.v[0]+g[0];s.v[1]=.9*s.v[1]+g[1];
+   p[0]-=lr*s.v[0];p[1]-=lr*s.v[1];}},
+ {id:'nag',n:'Nesterov',c:'#5b93bd',m:.16,
+  mk:()=>({v:[0,0]}),
+  st:(s,p,g,lr)=>{s.v[0]=.9*s.v[0]+g[0];s.v[1]=.9*s.v[1]+g[1];
+   p[0]-=lr*(g[0]+.9*s.v[0]);p[1]-=lr*(g[1]+.9*s.v[1]);}},
+ {id:'ada',n:'AdaGrad',c:'#7c5cc4',m:6,
+  mk:()=>({s:[0,0]}),
+  st:(s,p,g,lr)=>{for(let i=0;i<2;i++){s.s[i]+=g[i]*g[i];
+   p[i]-=lr*g[i]/(Math.sqrt(s.s[i])+EPS);}}},
+ {id:'rms',n:'RMSProp',c:'#1f8f8f',m:.8,
+  mk:()=>({s:[0,0]}),
+  st:(s,p,g,lr)=>{for(let i=0;i<2;i++){s.s[i]=.99*s.s[i]+.01*g[i]*g[i];
+   p[i]-=lr*g[i]/(Math.sqrt(s.s[i])+EPS);}}},
+ {id:'adam',n:'Adam',c:'#1a8a4f',m:.8,
+  mk:()=>({m:[0,0],v:[0,0],t:0}),
+  st:(s,p,g,lr)=>{s.t++;
+   for(let i=0;i<2;i++){s.m[i]=.9*s.m[i]+.1*g[i];s.v[i]=.999*s.v[i]+.001*g[i]*g[i];
+    const mh=s.m[i]/(1-Math.pow(.9,s.t)),vh=s.v[i]/(1-Math.pow(.999,s.t));
+    p[i]-=lr*mh/(Math.sqrt(vh)+EPS);}}},
+ {id:'adamw',n:'AdamW',c:'#6e9a2f',m:.8,
+  mk:()=>({m:[0,0],v:[0,0],t:0}),
+  st:(s,p,g,lr)=>{s.t++;
+   for(let i=0;i<2;i++){p[i]*= (1-lr*0.25);         // decoupled decay, wd=0.25
+    s.m[i]=.9*s.m[i]+.1*g[i];s.v[i]=.999*s.v[i]+.001*g[i]*g[i];
+    const mh=s.m[i]/(1-Math.pow(.9,s.t)),vh=s.v[i]/(1-Math.pow(.999,s.t));
+    p[i]-=lr*mh/(Math.sqrt(vh)+EPS);}}},
+ {id:'lion',n:'Lion',c:'#c4457e',m:.45,
+  mk:()=>({m:[0,0]}),
+  st:(s,p,g,lr)=>{for(let i=0;i<2;i++){
+   const u=Math.sign(.9*s.m[i]+.1*g[i]);p[i]-=lr*u;
+   s.m[i]=.99*s.m[i]+.01*g[i];}}},
+ {id:'muon',n:'Muon (2-D)',c:'#d07a1f',m:1,
+  mk:()=>({m:[0,0]}),
+  st:(s,p,g,lr)=>{s.m[0]=.9*s.m[0]+g[0];s.m[1]=.9*s.m[1]+g[1];
+   const n=Math.hypot(s.m[0],s.m[1])+EPS;    // Ortho of a 1x2 matrix = m/|m|
+   p[0]-=lr*s.m[0]/n;p[1]-=lr*s.m[1]/n;}},
+ {id:'fullm',n:'Full-matrix',c:'#b03a3a',m:6,
+  mk:()=>({G:[0,0,0]}),
+  st:(s,p,g,lr)=>{s.G[0]+=g[0]*g[0];s.G[1]+=g[0]*g[1];s.G[2]+=g[1]*g[1];
+   const S=msqrtInv(s.G);
+   p[0]-=lr*(S[0]*g[0]+S[1]*g[1]);p[1]-=lr*(S[1]*g[0]+S[2]*g[1]);}},
+ {id:'lbfgs',n:'L-BFGS',c:'#9a5a14',m:1,dash:true,
+  mk:(land)=>({S:[],Y:[],R:[],pp:null,pg:null,f:land.f}),
+  st:(s,p,g,lr)=>{
+   if(s.pp){const sv=[p[0]-s.pp[0],p[1]-s.pp[1]],yv=[g[0]-s.pg[0],g[1]-s.pg[1]];
+    const sy=sv[0]*yv[0]+sv[1]*yv[1];
+    if(sy>1e-10){s.S.push(sv);s.Y.push(yv);s.R.push(1/sy);
+     if(s.S.length>8){s.S.shift();s.Y.shift();s.R.shift();}}}
+   s.pp=[p[0],p[1]];s.pg=[g[0],g[1]];
+   let q=[g[0],g[1]];const al=[];
+   for(let i=s.S.length-1;i>=0;i--){
+    const a=s.R[i]*(s.S[i][0]*q[0]+s.S[i][1]*q[1]);al[i]=a;
+    q[0]-=a*s.Y[i][0];q[1]-=a*s.Y[i][1];}
+   if(s.S.length){const i=s.S.length-1;
+    const yy=s.Y[i][0]*s.Y[i][0]+s.Y[i][1]*s.Y[i][1];
+    const gam=(1/s.R[i])/Math.max(yy,1e-12);q[0]*=gam;q[1]*=gam;}
+   for(let i=0;i<s.S.length;i++){
+    const b=s.R[i]*(s.Y[i][0]*q[0]+s.Y[i][1]*q[1]);
+    q[0]+=s.S[i][0]*(al[i]-b);q[1]+=s.S[i][1]*(al[i]-b);}
+   const f0=s.f(p[0],p[1]),gd=g[0]*q[0]+g[1]*q[1];
+   let t=1;
+   if(gd>0){for(let k=0;k<12;k++){
+    if(s.f(p[0]-t*q[0],p[1]-t*q[1])<=f0-1e-4*t*gd)break;t*=.5;}}
+   else t=.1;                                  // corrupted pair: not a descent dir
+   p[0]-=t*q[0];p[1]-=t*q[1];}},
+];
+const MAXSTEPS=900;
+function makeRunners(land,start){
+  return OPTS.map(o=>({o,p:[start[0],start[1]],hist:[[start[0],start[1]]],
+    s:o.mk(land),dead:false,loss:land.f(start[0],start[1])}));
+}
+function stepRunners(runners,land,activeSet,lrBase,sigma){
+  const d=land.dom,mx=(d[1]-d[0]),my=(d[3]-d[2]);
+  runners.forEach(r=>{
+    if(r.dead||!activeSet.has(r.o.id))return;
+    const gp=land.g(r.p[0],r.p[1]);
+    if(sigma>0){gp[0]+=sigma*land.gs*randn();gp[1]+=sigma*land.gs*randn();}
+    r.o.st(r.s,r.p,gp,lrBase*r.o.m);
+    if(!isFinite(r.p[0])||!isFinite(r.p[1])||
+       r.p[0]<d[0]-mx||r.p[0]>d[1]+mx||r.p[1]<d[2]-my||r.p[1]>d[3]+my){
+      r.dead=true;return;}
+    r.hist.push([r.p[0],r.p[1]]);
+    r.loss=land.f(r.p[0],r.p[1]);
+  });
+}
+/*LAB-CORE-END*/
+
+(function lab(){
+const cv=document.getElementById('labcv');
+if(!cv)return;
+const ctx=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+const RM=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+let landKey='ravine',land=LANDS[landKey];
+let active=new Set(['sgd','mom','rms','adam','muon']);
+let runners=[],stepCount=0,paused=false,startPt=null,sigma=0,lrBase=.02;
+let needs=true;
+
+const X=x=>(x-land.dom[0])/(land.dom[1]-land.dom[0])*W;
+const Y=y=>(land.dom[3]-y)/(land.dom[3]-land.dom[2])*H;
+const IX=px=>land.dom[0]+px/W*(land.dom[1]-land.dom[0]);
+const IY=py=>land.dom[3]-py/H*(land.dom[3]-land.dom[2]);
+
+// ---- contour field (cached per landscape) ----
+const fields={};
+function field(){
+  if(fields[landKey])return fields[landKey];
+  const off=document.createElement('canvas');off.width=W;off.height=H;
+  const octx=off.getContext('2d');
+  const vals=new Float32Array(W*H);
+  let fmin=1e30,fmax=-1e30;
+  for(let py=0;py<H;py++)for(let px=0;px<W;px++){
+    const v=land.f(IX(px+.5),IY(py+.5));vals[py*W+px]=v;
+    if(v<fmin)fmin=v;if(v>fmax)fmax=v;}
+  const bands=new Uint8Array(W*H),NB=16;
+  const rng=Math.max(fmax-fmin,1e-12);
+  for(let i=0;i<W*H;i++){
+    const t=Math.pow((vals[i]-fmin)/rng,0.24);
+    bands[i]=Math.max(0,Math.min(NB-1,Math.floor(t*NB)));}
+  const img=octx.createImageData(W,H);
+  const c0=[250,252,251],c1=[213,224,231],cl=[168,188,204];
+  for(let py=0;py<H;py++)for(let px=0;px<W;px++){
+    const i=py*W+px,b=bands[i];
+    const edge=(px<W-1&&bands[i+1]!==b)||(py<H-1&&bands[i+W]!==b);
+    const t=b/(NB-1);const o=i*4;
+    if(edge){img.data[o]=cl[0];img.data[o+1]=cl[1];img.data[o+2]=cl[2];}
+    else{img.data[o]=c0[0]+(c1[0]-c0[0])*t;
+         img.data[o+1]=c0[1]+(c1[1]-c0[1])*t;
+         img.data[o+2]=c0[2]+(c1[2]-c0[2])*t;}
+    img.data[o+3]=255;}
+  octx.putImageData(img,0,0);
+  // minima markers
+  octx.strokeStyle='#127041';octx.lineWidth=2;
+  land.mins.forEach(mn=>{const x=X(mn[0]),y=Y(mn[1]);
+    octx.beginPath();
+    octx.moveTo(x-6,y);octx.lineTo(x+6,y);octx.moveTo(x,y-6);octx.lineTo(x,y+6);
+    octx.stroke();
+    octx.beginPath();octx.arc(x,y,3,0,7);octx.stroke();});
+  fields[landKey]=off;return off;
+}
+
+function restart(){
+  stepCount=0;
+  const st=startPt||land.start;
+  runners=makeRunners(land,st);
+  needs=true;
+  if(RM)finishNow();
+}
+function finishNow(){
+  while(stepCount<MAXSTEPS){stepCount++;
+    stepRunners(runners,land,active,lrBase,sigma);}
+  needs=true;
+}
+
+function draw(){
+  ctx.drawImage(field(),0,0);
+  const st=startPt||land.start;
+  ctx.fillStyle='#56656f';
+  ctx.beginPath();ctx.arc(X(st[0]),Y(st[1]),4,0,7);ctx.fill();
+  runners.forEach(r=>{
+    if(!active.has(r.o.id))return;
+    ctx.strokeStyle=r.o.c;ctx.lineWidth=2;ctx.globalAlpha=.85;
+    if(r.o.dash)ctx.setLineDash([5,4]);
+    ctx.beginPath();
+    const h=r.hist;ctx.moveTo(X(h[0][0]),Y(h[0][1]));
+    for(let i=1;i<h.length;i++)ctx.lineTo(X(h[i][0]),Y(h[i][1]));
+    ctx.stroke();ctx.setLineDash([]);ctx.globalAlpha=1;
+    const e=h[h.length-1];
+    ctx.fillStyle=r.o.c;
+    ctx.beginPath();ctx.arc(X(e[0]),Y(e[1]),4.5,0,7);ctx.fill();
+    ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();
+    if(r.dead){ctx.fillStyle=r.o.c;ctx.font='700 13px monospace';
+      ctx.fillText('✗',X(e[0])+7,Y(e[1])-6);}
+  });
+  updateVals();
+}
+function fmtLoss(v){
+  if(!isFinite(v))return'—';
+  return v>=.01?v.toFixed(3):v.toExponential(1);
+}
+let valEls={};
+function updateVals(){
+  runners.forEach(r=>{const el=valEls[r.o.id];if(!el)return;
+    el.textContent=active.has(r.o.id)?(r.dead?'diverged':fmtLoss(r.loss)):'';});
+}
+
+// ---- controls ----
+const segEl=document.getElementById('lab-lands');
+Object.keys(LANDS).forEach(k=>{
+  const b=document.createElement('button');b.textContent=LANDS[k].label;
+  if(k===landKey)b.className='on';
+  b.onclick=()=>{landKey=k;land=LANDS[k];startPt=null;
+    [...segEl.children].forEach(x=>x.className='');b.className='on';restart();};
+  segEl.appendChild(b);});
+
+const optEl=document.getElementById('lab-opts');
+OPTS.forEach(o=>{
+  const d=document.createElement('div');
+  d.className='opt'+(active.has(o.id)?' on':'');
+  d.setAttribute('role','button');d.setAttribute('tabindex','0');
+  d.innerHTML=`<span class="od"></span>${o.n}<span class="val"></span>`;
+  const dot=d.querySelector('.od');
+  const paint=()=>{dot.style.background=active.has(o.id)?o.c:'';
+    d.classList.toggle('on',active.has(o.id));};
+  paint();
+  const tog=()=>{active.has(o.id)?active.delete(o.id):active.add(o.id);
+    paint();restart();};
+  d.onclick=tog;
+  d.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tog();}};
+  valEls[o.id]=d.querySelector('.val');
+  optEl.appendChild(d);});
+
+const lrIn=document.getElementById('lab-lr'),lrV=document.getElementById('lab-lrv');
+lrIn.oninput=()=>{lrBase=Math.pow(10,-3+2.2*lrIn.value/100);
+  lrV.textContent=lrBase.toPrecision(2);restart();};
+const sgIn=document.getElementById('lab-sg'),sgV=document.getElementById('lab-sgv');
+sgIn.oninput=()=>{sigma=sgIn.value/100;sgV.textContent=sigma.toFixed(2);restart();};
+const runBtn=document.getElementById('lab-run');
+runBtn.onclick=()=>{paused=!paused;runBtn.textContent=paused?'Play':'Pause';};
+document.getElementById('lab-rst').onclick=()=>restart();
+cv.addEventListener('click',e=>{
+  const r=cv.getBoundingClientRect();
+  startPt=[IX((e.clientX-r.left)/r.width*W),IY((e.clientY-r.top)/r.height*H)];
+  restart();});
+
+// ---- loop ----
+restart();
+(function frame(){
+  if(!RM&&!paused&&stepCount<MAXSTEPS){
+    for(let k=0;k<3&&stepCount<MAXSTEPS;k++){stepCount++;
+      stepRunners(runners,land,active,lrBase,sigma);}
+    needs=true;}
+  if(needs){draw();needs=false;}
+  requestAnimationFrame(frame);
+})();
+})();
+
+/* ============================================================
+   4) Ortho(M) mini-animation — ellipse → circle
+   ============================================================ */
+(function orthoViz(){
+const cv=document.getElementById('ortho-cv');
+if(!cv)return;
+const ctx=cv.getContext('2d');
+const W=cv.width,H=cv.height,cx=W/2,cy=H/2,UNIT=44;
+const RM=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const au=0.6,av=-0.35; // fixed U,V rotations
+const s10=2.05,s20=0.42;
+function pt(phi,s1,s2){
+  // M x, with M = R(au)·diag(s1,s2)·R(av)ᵀ applied to unit circle point
+  let x=Math.cos(phi),y=Math.sin(phi);
+  let x1=Math.cos(-av)*x-Math.sin(-av)*y, y1=Math.sin(-av)*x+Math.cos(-av)*y;
+  x1*=s1;y1*=s2;
+  return[Math.cos(au)*x1-Math.sin(au)*y1, Math.sin(au)*x1+Math.cos(au)*y1];
+}
+function draw(t){
+  const s1=s10+(1-s10)*t, s2=s20+(1-s20)*t;
+  ctx.clearRect(0,0,W,H);
+  // unit circle (target)
+  ctx.setLineDash([4,4]);ctx.strokeStyle='#8a97a0';ctx.lineWidth=1.3;
+  ctx.beginPath();ctx.arc(cx,cy,UNIT,0,7);ctx.stroke();ctx.setLineDash([]);
+  // ellipse
+  ctx.strokeStyle='#1a8a4f';ctx.lineWidth=2.2;
+  ctx.beginPath();
+  for(let i=0;i<=90;i++){const p=pt(i/90*2*Math.PI,s1,s2);
+    const px=cx+p[0]*UNIT,py=cy-p[1]*UNIT;
+    i?ctx.lineTo(px,py):ctx.moveTo(px,py);}
+  ctx.stroke();
+  // principal axes arrows
+  [[0,s1,'σ₁'],[Math.PI/2,s2,'σ₂']].forEach(([phi,s,lab])=>{
+    const p=pt(phi,s1,s2);
+    const px=cx+p[0]*UNIT,py=cy-p[1]*UNIT;
+    ctx.strokeStyle='#127041';ctx.lineWidth=1.6;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(px,py);ctx.stroke();
+    ctx.fillStyle='#127041';
+    ctx.beginPath();ctx.arc(px,py,3,0,7);ctx.fill();
+    ctx.font='11px monospace';
+    ctx.fillText(lab+' = '+s.toFixed(2),px+6,py-4);});
+  ctx.fillStyle='#56656f';ctx.font='11.5px monospace';
+  ctx.fillText(t<.02?'M · (unit circle)':t>.98?'Ortho(M) — all σ = 1':'…squashing σ toward 1',12,18);
+}
+if(RM){draw(0);
+  // overlay final state faintly for reduced motion
+  ctx.globalAlpha=.45;draw(1);ctx.globalAlpha=1;
+}else{
+  let t0=null;
+  (function anim(ts){
+    if(t0===null)t0=ts;
+    const c=((ts-t0)/3400)%2;              // ping-pong, 3.4s per leg
+    let t=c<1?c:2-c;
+    t=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;   // easeInOut
+    draw(t);
+    requestAnimationFrame(anim);
+  })(performance.now());
+}
+})();
+
 </script>
