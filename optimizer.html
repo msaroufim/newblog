@@ -1,0 +1,621 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Optimizer Lineage — by the state it keeps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;450;500;600&family=JetBrains+Mono:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16222c;
+    --ink-soft:#56656f;
+    --ink-faint:#8a97a0;
+    --paper:#e8ebe9;
+    --paper-2:#f3f5f3;
+    --line:#c9d0cd;
+    --blue:#2c5f86;
+    --green:#1a8a4f;            /* THE accent: "new state / new idea added here" */
+    --green-deep:#127041;
+    --amber:#b5701f;            /* changed line */
+    --code-bg:#ffffff;
+    --code-bg2:#f1f4f3;
+    --code-fg:#1d2a33;        /* main code text — dark on white */
+    --code-dim:#7c8a8a;       /* comments */
+    --code-add:#147a45;       /* added: gutter + tint */
+    --code-chg:#9a5a14;       /* changed: gutter + tint */
+    --code-kw:#8a3fc0;        /* keyword */
+    --code-num:#b3367a;       /* number */
+    --code-fn:#1f6f8c;        /* function */
+    --code-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+    --radius:14px;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+    --disp:"Space Grotesk",system-ui,sans-serif;
+    --body:"Inter",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;background:var(--paper);color:var(--ink);
+    font-family:var(--body);font-weight:450;line-height:1.55;
+    font-size:16px;letter-spacing:-0.003em;
+    background-image:
+      linear-gradient(rgba(44,95,134,.045) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(44,95,134,.045) 1px,transparent 1px);
+    background-size:30px 30px;
+  }
+  .wrap{max-width:1120px;margin:0 auto;padding:0 22px}
+
+  /* ---------- HERO ---------- */
+  header{padding:64px 0 30px}
+  .eyebrow{font-family:var(--mono);font-size:12.5px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--blue);font-weight:500;margin:0 0 18px}
+  h1{font-family:var(--disp);font-weight:700;letter-spacing:-0.02em;
+    font-size:clamp(32px,5.4vw,56px);line-height:1.02;margin:0 0 22px;max-width:18ch}
+  .thesis{max-width:60ch;font-size:clamp(16px,2vw,18.5px);color:var(--ink-soft);margin:0 0 28px}
+  .thesis b{color:var(--ink);font-weight:600}
+
+  .master{
+    display:inline-flex;align-items:center;gap:14px;flex-wrap:wrap;
+    font-family:var(--mono);background:#0e1620;color:#cdd9e3;
+    padding:16px 20px;border-radius:12px;font-size:clamp(13px,2vw,16px);
+    box-shadow:0 10px 30px -18px rgba(16,22,30,.7);
+  }
+  .master .g{color:#5fe39a}
+  .master .k{color:#7fb6ff}
+  .master .tag{font-family:var(--body);font-size:12px;color:#8294a0;
+    border-left:1px solid #2a3a48;padding-left:14px;letter-spacing:.02em}
+
+  /* ---------- LEGEND ---------- */
+  .legend{display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:26px;
+    font-family:var(--mono);font-size:12.5px;color:var(--ink-soft)}
+  .legend span{display:inline-flex;align-items:center;gap:8px}
+  .swatch{width:13px;height:13px;border-radius:3px;display:inline-block}
+  .sw-new{background:var(--green)}
+  .sw-add{background:var(--code-add)}
+  .sw-chg{background:var(--code-chg)}
+  .sw-inh{background:var(--ink-faint)}
+
+  /* ---------- SECTION TITLES ---------- */
+  .section-head{margin:56px 0 8px;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  .section-head h2{font-family:var(--disp);font-weight:600;font-size:clamp(20px,3vw,27px);
+    letter-spacing:-0.01em;margin:0}
+  .section-head .idx{font-family:var(--mono);color:var(--green-deep);font-weight:700;font-size:15px}
+  .section-sub{color:var(--ink-soft);max-width:64ch;margin:0 0 22px;font-size:15px}
+  .section-sub code{font-family:var(--mono);font-size:.86em;background:var(--paper-2);
+    padding:1px 6px;border-radius:5px;border:1px solid var(--line)}
+
+  /* ---------- TREE MAP ---------- */
+  .map-shell{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);
+    padding:10px;margin-top:14px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .map-shell svg{display:block;min-width:760px;width:100%;height:auto}
+  .axis-note{margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:1px;
+    background:var(--line);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .axis-note > div{background:var(--paper-2);padding:16px 19px}
+  .axis-note h4{margin:0 0 8px;font-family:var(--mono);font-size:11.5px;letter-spacing:.09em;
+    text-transform:uppercase;display:flex;align-items:center;gap:8px}
+  .axis-note h4 .mk{width:13px;height:13px;border-radius:3px;display:inline-block}
+  .axis-note .sto h4{color:var(--green-deep)}.axis-note .sto .mk{background:var(--green)}
+  .axis-note .detcol h4{color:#9a5a14}
+  .axis-note .detcol .mk{background:#fff;border:1.5px dashed #9a5a14}
+  .axis-note .names{font-family:var(--mono);font-size:12px;color:var(--ink);margin:0 0 8px;line-height:1.6}
+  .axis-note p{margin:0;font-size:13.5px;color:var(--ink-soft);line-height:1.5}
+  @media (max-width:560px){.axis-note{grid-template-columns:1fr}.glossary ol{grid-template-columns:1fr}}
+  .node-box{cursor:pointer}
+  .node-box rect{fill:#fff;stroke:var(--line);stroke-width:1.5;transition:stroke .15s,filter .15s}
+  .node-box:hover rect{stroke:var(--green);filter:drop-shadow(0 4px 10px rgba(26,138,79,.2))}
+  .node-box:focus{outline:none}
+  .node-box:focus-visible rect{stroke:var(--green);stroke-width:2.5}
+  .n-title{font-family:var(--disp);font-weight:600;fill:var(--ink)}
+  .n-sub{font-family:var(--mono);fill:var(--ink-faint)}
+  .hub rect{fill:rgba(26,138,79,.10);stroke:rgba(26,138,79,.45)}
+  .hub .n-title{fill:var(--green-deep);font-family:var(--mono);font-weight:700}
+  .edge{fill:none;stroke:var(--blue);stroke-width:1.6;opacity:.55}
+  .edge.dash{stroke-dasharray:4 4;opacity:.5}
+  .edge-lab{font-family:var(--mono);font-size:11px;fill:var(--blue);opacity:.85}
+  .sgd rect{fill:var(--ink);stroke:var(--ink)}
+  .sgd .n-title{fill:#fff}
+  .sgd .n-sub{fill:#9fb0bb}
+  .node-box.det rect{fill:#fff;stroke:#9a5a14;stroke-dasharray:5 4}
+  .node-box.det:hover rect{stroke:#7a4710;filter:drop-shadow(0 4px 10px rgba(154,90,20,.2))}
+  .node-box.det:focus-visible rect{stroke:#7a4710}
+  .node-box.det .n-sub{fill:#9a5a14}
+
+  /* ---------- CARDS ---------- */
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px;margin-top:6px}
+  .card{background:var(--paper-2);border:1px solid var(--line);border-radius:var(--radius);
+    overflow:hidden;display:flex;flex-direction:column;scroll-margin-top:18px}
+  .card-head{padding:16px 18px 13px;border-bottom:1px solid var(--line)}
+  .card-name{font-family:var(--disp);font-weight:700;font-size:20px;margin:0;letter-spacing:-0.01em;
+    display:flex;align-items:center;gap:9px}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--green);flex:0 0 auto}
+  .lineage{font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin:5px 0 0}
+  .lineage .from{color:var(--ink-faint)}
+  .lineage .plus{color:var(--green-deep);font-weight:700}
+
+  .state{display:flex;flex-wrap:wrap;gap:6px;padding:13px 18px 4px}
+  .chip{font-family:var(--mono);font-size:11.5px;padding:3px 9px;border-radius:20px;
+    border:1px solid var(--line);color:var(--ink-soft);background:#fff;white-space:nowrap}
+  .chip.new{border-color:var(--green);color:var(--green-deep);background:rgba(26,138,79,.08);font-weight:500}
+  .chip.none{color:var(--ink-faint);font-style:normal}
+  .chip.det{border-color:#caa06a;color:#9a5a14;background:rgba(154,90,20,.07)}
+
+  .formula{margin:11px 18px 4px;padding:12px 14px;background:#fff;border:1px solid var(--line);
+    border-radius:10px;font-family:var(--mono);font-size:13.5px;line-height:1.85;color:var(--ink);overflow-x:auto}
+  .formula .hl{background:rgba(26,138,79,.14);border-radius:4px;padding:1px 4px;color:var(--green-deep);font-weight:500}
+  .formula .lab{color:var(--ink-faint);font-size:11.5px}
+  .formula sub,.formula sup{font-size:.72em}
+
+  .code-wrap{margin:13px 18px 18px;background:var(--code-bg);border-radius:11px;overflow:hidden;
+    border:1px solid #dde3e1}
+  .code-top{display:flex;align-items:center;gap:7px;padding:9px 13px;background:var(--code-bg2);
+    border-bottom:1px solid #e2e7e4}
+  .code-top .pip{width:9px;height:9px;border-radius:50%}
+  .code-top .pip:nth-child(1){background:#e0606a}.code-top .pip:nth-child(2){background:#e0b257}
+  .code-top .pip:nth-child(3){background:#5fc97f}
+  .code-top span{margin-left:6px;font-family:var(--code-mono);font-size:11.5px;color:var(--code-dim)}
+  pre{margin:0;padding:13px 0;overflow-x:auto;font-family:var(--code-mono);font-size:12.7px;
+    line-height:1.62;color:var(--code-fg)}
+  .ln{display:block;padding:0 15px 0 0;white-space:pre;position:relative;color:var(--code-fg)}
+  .ln .gutter{display:inline-block;width:20px;color:var(--code-dim);text-align:center;user-select:none}
+  .ln.add{background:rgba(20,122,69,.10)}
+  .ln.add .gutter{color:var(--code-add)}
+  .ln.chg{background:rgba(154,90,20,.11)}
+  .ln.chg .gutter{color:var(--code-chg)}
+  .ln.ctx{color:var(--code-fg)}
+  .cm{color:var(--code-dim);font-style:italic}
+  .kw{color:var(--code-kw)}.num{color:var(--code-num)}.fn{color:var(--code-fn)}.st{color:#a8541a}
+
+  /* ---------- FOOTNOTES ---------- */
+  .fnref{font-family:var(--mono);font-size:.68em;vertical-align:super;line-height:0;
+    color:var(--green-deep);text-decoration:none;font-weight:700;padding:0 1px}
+  .fnref:hover{text-decoration:underline}
+  .glossary{background:var(--line);border:1px solid var(--line);border-radius:var(--radius);
+    margin-top:14px;overflow:hidden}
+  .glossary ol{list-style:none;margin:0;padding:0;counter-reset:fn;display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(430px,1fr));gap:1px}
+  .glossary li{counter-increment:fn;display:grid;grid-template-columns:46px 1fr;
+    align-content:start;background:var(--paper-2);
+    padding:16px 20px;scroll-margin-top:24px;transition:background .5s}
+  .glossary li:last-child:nth-child(odd){grid-column:1/-1}
+  .glossary li::before{content:counter(fn,decimal-leading-zero);font-family:var(--mono);
+    color:var(--green-deep);font-weight:700;font-size:13px;padding-top:2px}
+  .glossary li:target{background:rgba(26,138,79,.09)}
+  .glossary .term{grid-column:2;font-family:var(--disp);font-weight:600;font-size:15px;color:var(--ink)}
+  .glossary p{margin:4px 0 0;grid-column:2;font-size:13.5px;color:var(--ink-soft);line-height:1.55;max-width:78ch}
+  .glossary code{font-family:var(--mono);font-size:.88em;background:#fff;border:1px solid var(--line);
+    border-radius:5px;padding:1px 5px;color:var(--ink)}
+  .glossary .lab{color:var(--ink-faint);font-size:12px}
+
+  .takeaways{background:var(--ink);color:#dfe7ec;border-radius:var(--radius);padding:30px 28px;margin:30px 0 12px}
+  .takeaways h3{font-family:var(--disp);color:#fff;margin:0 0 16px;font-size:20px}
+  .takeaways ul{margin:0;padding:0;list-style:none;display:grid;gap:13px}
+  .takeaways li{padding-left:24px;position:relative;font-size:15px;color:#c2cdd5;max-width:80ch}
+  .takeaways li::before{content:"→";position:absolute;left:0;color:var(--code-add);font-family:var(--mono)}
+  .takeaways b{color:#fff;font-weight:600}
+  .takeaways code{font-family:var(--mono);font-size:.86em;color:#9fe6bf}
+
+  footer{padding:34px 0 60px;color:var(--ink-faint);font-family:var(--mono);font-size:12px}
+
+  @media (max-width:560px){
+    header{padding:42px 0 18px}
+    .master{font-size:12.5px;padding:13px 15px}
+    .cards{grid-template-columns:1fr}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+  .fade{opacity:0;transform:translateY(10px);animation:rise .6s ease forwards}
+  @keyframes rise{to{opacity:1;transform:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow fade">Gradient&nbsp;descent · a field guide</p>
+    <h1 class="fade" style="animation-delay:.05s">The optimizer family tree, organized by the state it keeps</h1>
+    <p class="thesis fade" style="animation-delay:.1s">
+      Every optimizer here is the <b>same step</b> — walk downhill — differing only in <b>how it transforms the
+      gradient</b> and <b>what extra memory it carries</b> to do so. So the tree branches by state, not by
+      publication date. The accent <span style="color:var(--green-deep);font-weight:600">green</span> always marks
+      the one new thing a node adds over its parent.
+    </p>
+    <div class="master fade" style="animation-delay:.16s">
+      <span><span class="k">θ</span> ← <span class="k">θ</span> − η · <span class="g">𝚏(g, state)</span></span>
+      <span class="tag">pick f and state → pick your optimizer</span>
+    </div>
+
+    <div class="legend fade" style="animation-delay:.22s">
+      <span><i class="swatch sw-new"></i> new state / idea added here</span>
+      <span><i class="swatch sw-add"></i> <code style="font-family:var(--mono)">+</code> added line vs parent</span>
+      <span><i class="swatch sw-chg"></i> <code style="font-family:var(--mono)">~</code> changed line vs parent</span>
+      <span><i class="swatch sw-inh"></i> inherited state</span>
+    </div>
+  </header>
+
+  <!-- ================= TREE MAP ================= -->
+  <div class="section-head"><span class="idx">MAP</span><h2>The lineage at a glance</h2></div>
+  <p class="section-sub">Branches are the three ways to spend memory: a <b>first moment</b><a class="fnref" href="#fn-first">2</a> (velocity),
+    a <b>second moment</b><a class="fnref" href="#fn-second">3</a> (per-parameter scale), or a <b>structured preconditioner</b><a class="fnref" href="#fn-precond">5</a> (whole-matrix curvature).
+    Adam is literally the merge of the momentum and RMSProp branches. The dashed node is the one
+    <b>deterministic / full-batch</b> method (L-BFGS) — everything else is built for stochastic mini-batches.
+    Tap any node to jump to its card; numbered marks like these jump to short footnotes at the bottom.</p>
+  <div class="map-shell">
+    <svg id="tree" viewBox="0 0 1260 780" role="img" aria-label="Optimizer family tree diagram"></svg>
+  </div>
+  <div class="axis-note">
+    <div class="sto">
+      <h4><span class="mk"></span>Stochastic · mini-batch</h4>
+      <p class="names">SGD · Momentum · Nesterov · AdaGrad · RMSProp · Adam(W) · Lion · Adafactor · Muon · Shampoo · K-FAC · PSGD</p>
+      <p>Designed to make progress from one noisy mini-batch gradient at a time. The whole tree above lives here — noise tolerance is the point.</p>
+    </div>
+    <div class="detcol">
+      <h4><span class="mk"></span>Deterministic · full-batch</h4>
+      <p class="names">Newton · BFGS · L-BFGS  <span style="color:var(--ink-faint)">(secant / quasi-Newton)</span></p>
+      <p>Infer curvature from gradient <i>differences</i> (B·s = y, the secant condition<a class="fnref" href="#fn-secant">8</a>) and usually pair with a line search — both assume a stable objective. Mini-batch noise corrupts the (s, y) pairs, so these are rare in deep learning.</p>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" id="cardzone"></div>
+
+<div class="wrap">
+  <div class="section-head"><span class="idx">FN</span><h2>Footnotes — the concepts, briefly</h2></div>
+  <p class="section-sub">Every recurring term above, defined once. The numbered marks throughout the page land here.</p>
+  <div class="glossary">
+    <ol>
+      <li id="fn-ema"><span class="term">EMA — exponential moving average</span>
+        <p><code>s ← ρ·s + (1−ρ)·x</code>. A running average that forgets at rate ρ; its memory horizon is roughly <code>1/(1−ρ)</code> steps (β=0.9 ≈ the last 10 gradients, β=0.999 ≈ the last 1000). Almost every buffer in this tree is an EMA of something.</p></li>
+      <li id="fn-first"><span class="term">First moment</span>
+        <p>The <i>mean</i>. In statistics the k-th moment of a random variable is E[xᵏ]; the first is E[x]. An EMA of the raw gradient estimates E[g] — the average direction — which is exactly what a velocity/momentum buffer is. It smooths mini-batch noise and builds speed along directions that keep agreeing with themselves.</p></li>
+      <li id="fn-second"><span class="term">Second moment</span>
+        <p>E[g²], per coordinate — the average <i>squared</i> gradient, i.e. the uncentered variance. Its square root is an RMS (<b>r</b>oot <b>m</b>ean <b>s</b>quare — hence RMS­Prop). Dividing the step by <code>√E[g²]</code> gives every parameter its own learning rate: coordinates with habitually large gradients get reined in, quiet ones get amplified.</p></li>
+      <li id="fn-bias"><span class="term">Bias correction</span>
+        <p>An EMA initialized at zero underestimates at first: after t steps it has only accumulated a fraction <code>(1−βᵗ)</code> of the true average. Adam divides by that fraction (<code>m̂ = m/(1−β₁ᵗ)</code>, <code>v̂ = v/(1−β₂ᵗ)</code>) so early steps aren't artificially tiny. The correction fades to 1 as t grows.</p></li>
+      <li id="fn-precond"><span class="term">Preconditioner</span>
+        <p>Any matrix P in <code>θ ← θ − η·P·g</code> that reshapes the gradient before stepping. The ideal is Newton's <code>P = H⁻¹</code> (inverse Hessian) — perfect but unaffordable. Adam/RMSProp use a <i>diagonal</i> P (<code>1/(√v+ε)</code> per coordinate); Shampoo, K-FAC and PSGD spend more memory on <i>structured</i> full matrices that also capture correlations between parameters.</p></li>
+      <li id="fn-ortho"><span class="term">Orthogonalization — Ortho(M)</span>
+        <p>Write the SVD <code>M = UΣVᵀ</code>: U, V hold the directions, Σ the magnitudes. Then <code>Ortho(M) := UVᵀ</code> — same directions, every singular value set to 1. It's the nearest orthogonal(-ish) matrix to M, and equivalently <code>(MMᵀ)<sup>−½</sup>·M</code>. The point: a raw momentum matrix is dominated by a few large singular directions; orthogonalizing makes the update push equally along <i>all</i> of them.</p></li>
+      <li id="fn-ns"><span class="term">Newton–Schulz iteration</span>
+        <p>Computing UVᵀ by actual SVD is slow and GPU-unfriendly. Newton–Schulz instead iterates a fixed odd matrix polynomial, <code>X ← a·X + b·(XXᵀ)X + c·(XXᵀ)²X</code>, on the normalized momentum. Each pass squashes all singular values toward 1, so ~5 iterations of pure matmuls (bf16-safe) ≈ Ortho(M) — no decomposition ever computed. Muon uses tuned coefficients (a≈3.44, b≈−4.78, c≈2.03) that converge fast without needing high precision.</p></li>
+      <li id="fn-secant"><span class="term">Secant / quasi-Newton</span>
+        <p>Don't compute the Hessian — <i>infer</i> it from how the gradient moved: demand <code>B·s = y</code> where <code>s = Δθ</code> and <code>y = Δg</code> (the secant condition, the multivariate cousin of a finite-difference slope). BFGS refines an estimate with each new (s, y) pair; L-BFGS keeps only the last m pairs and rebuilds H⁻¹g on the fly. Mini-batch noise corrupts y (the gradient changed because the <i>batch</i> changed, not θ), which is why this family stays full-batch.</p></li>
+      <li id="fn-fisher"><span class="term">Fisher information / natural gradient</span>
+        <p>The Fisher matrix F measures how much the model's <i>output distribution</i> shifts per unit change of each parameter. Stepping along <code>F⁻¹·g</code> — the natural gradient — takes uniform steps in output space rather than parameter space, making the update invariant to how the network happens to be parameterized. K-FAC makes F tractable per layer as a Kronecker product <code>A ⊗ G</code> (input-activation covariance ⊗ output-gradient covariance), so <code>F⁻¹g ≈ A⁻¹·g·G⁻¹</code>.</p></li>
+    </ol>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="takeaways">
+    <h3>The whole tree in five lines</h3>
+    <ul>
+      <li><b>State is the storyline.</b> SGD keeps nothing; momentum adds one tensor (velocity), RMSProp adds one tensor (squared-grad EMA), Adam keeps both.</li>
+      <li><b>AdaGrad → RMSProp</b> is a single edit: replace the growing sum <code>s += g²</code> with a decaying average <code>s = ρs + (1−ρ)g²</code>, so the step size stops collapsing.</li>
+      <li><b>Adam = Momentum + RMSProp</b> (plus bias correction). <b>AdamW</b> just pulls weight decay out of the gradient and applies it straight to θ. <b>Lion</b> drops the second moment entirely and takes the <code>sign</code> of the momentum.</li>
+      <li><b>Adafactor</b> keeps Adam's idea but refuses to store a full <code>v</code> for matrices — it factors it into row + column stats and reconstructs a rank-1 approximation. It's compressed <i>second moment</i>, not compressed momentum.</li>
+      <li><b>PSGD, Shampoo, K-FAC</b> leave the diagonal world: instead of one scalar per parameter they apply a <i>matrix</i> preconditioner (learned, Gram-based, or Fisher-based) to the whole gradient — all in the stochastic mini-batch regime. Shampoo in particular is best read as <b>full-matrix AdaGrad made affordable</b>: the ideal accumulator <code>Σ g·gᵀ</code> over all parameters is Kronecker-factored into a left and right matrix per layer.</li>
+      <li><b>L-BFGS sits apart.</b> It's a <i>secant / quasi-Newton</i> method — curvature inferred from successive gradient <i>differences</i> (<code>B·s = y</code>), making it a <b>sibling</b> of Shampoo, not a descendant. It's also the lone <b>deterministic / full-batch</b> method here: mini-batch noise corrupts the (s, y) pairs and breaks the line search, which is why it's rare in deep learning.</li>
+      <li><b>Muon</b> is the newest branch: keep <i>only</i> momentum, then <b>orthogonalize</b> that momentum matrix (<code>Ortho(M) = UVᵀ</code>) with a few cheap Newton–Schulz steps — no <code>v</code>, no accumulation. And the Shampoo link is <i>exact</i>, not a metaphor: plug the instantaneous <code>L = MMᵀ</code>, <code>R = MᵀM</code> into Shampoo's <code>L^−¼·M·R^−¼</code> and the algebra collapses to precisely <code>UVᵀ</code>.</li>
+      <li><b>One trick, two scales.</b> <code>sign(m) = m/√m²</code> normalizes a vector <i>per coordinate</i>; <code>Ortho(M) = UVᵀ</code> normalizes a matrix <i>per singular direction</i>. Lion and Muon are the same instinct — keep the direction, flatten the magnitudes — applied to different geometry. And Adam sits between them: it divides by <code>√v</code>, a smoothed version of the same per-coordinate normalization.</li>
+    </ul>
+  </div>
+  <footer>Built as a study map · math is the conceptual update; code is a minimal per-parameter step (bias-correction / shapes simplified for readability).</footer>
+</div>
+
+<script>
+/* ============================================================
+   1) TREE MAP  — data-driven SVG so connectors stay correct
+   ============================================================ */
+const NODES = {
+  sgd:    {x:600,y:50, w:138,h:46,t:"SGD",s:"θ -= lr·g",cls:"sgd",id:"c-sgd"},
+
+  hVel:   {x:180,y:152,w:150,h:32,t:"+ 1st moment",s:"",cls:"hub"},
+  hDiag:  {x:600,y:152,w:182,h:32,t:"+ 2nd moment (diag)",s:"",cls:"hub"},
+  hStr:   {x:1020,y:152,w:196,h:32,t:"+ structured precond.",s:"",cls:"hub"},
+
+  mom:    {x:105,y:272,w:130,h:46,t:"Momentum",s:"velocity v",id:"c-momentum"},
+  nag:    {x:268,y:272,w:130,h:46,t:"Nesterov",s:"look-ahead",id:"c-nesterov"},
+
+  ada:    {x:478,y:272,w:130,h:46,t:"AdaGrad",s:"Σ g²",id:"c-adagrad"},
+  rms:    {x:692,y:272,w:130,h:46,t:"RMSProp",s:"EMA g²",id:"c-rmsprop"},
+
+  hAdam:  {x:600,y:392,w:176,h:32,t:"1st + 2nd moment",s:"",cls:"hub"},
+  adam:   {x:448,y:510,w:120,h:46,t:"Adam",s:"m + v",id:"c-adam"},
+  adamw:  {x:600,y:510,w:120,h:46,t:"AdamW",s:"decoupled wd",id:"c-adamw"},
+  lion:   {x:752,y:510,w:120,h:46,t:"Lion",s:"sign, no v",id:"c-lion"},
+
+  hFact:  {x:448,y:606,w:150,h:32,t:"factor vₜ",s:"",cls:"hub"},
+  adaf:   {x:448,y:700,w:140,h:46,t:"Adafactor",s:"row⊗col ≈ v",id:"c-adafactor"},
+
+  psgd:   {x:858,y:272,w:104,h:46,t:"PSGD",s:"learned P",id:"c-psgd"},
+  shamp:  {x:972,y:272,w:116,h:46,t:"Shampoo",s:"matrix AdaGrad",id:"c-shampoo"},
+  kfac:   {x:1086,y:272,w:104,h:46,t:"K-FAC",s:"Fisher",id:"c-kfac"},
+  lbfgs:  {x:1196,y:272,w:104,h:46,t:"L-BFGS",s:"secant · full-batch",cls:"det",id:"c-lbfgs"},
+  muon:   {x:972,y:392,w:128,h:46,t:"Muon",s:"orthogonalize M",id:"c-muon"},
+};
+const EDGES = [
+  ["sgd","hVel"],["sgd","hDiag"],["sgd","hStr"],
+  ["hVel","mom"],["hVel","nag"],
+  ["hDiag","ada"],["hDiag","rms"],
+  ["rms","hAdam","solid","2nd"],
+  ["mom","hAdam","dash","1st"],
+  ["hAdam","adam"],["hAdam","adamw"],["hAdam","lion","dash","−v, sign"],
+  ["adam","hFact"],["hFact","adaf"],
+  ["hStr","psgd"],["hStr","shamp"],["hStr","kfac"],
+  ["hStr","lbfgs","dash","deterministic"],
+  ["shamp","muon","solid","+ momentum"],
+];
+
+(function buildTree(){
+  const svg=document.getElementById("tree");
+  const NS="http://www.w3.org/2000/svg";
+  const bottom=n=>n.y+n.h/2, top=n=>n.y-n.h/2;
+
+  // edges first (behind nodes)
+  EDGES.forEach(([a,b,style,lab])=>{
+    const p=NODES[a],c=NODES[b];
+    const x1=p.x,y1=bottom(p),x2=c.x,y2=top(c);
+    const my=(y1+y2)/2;
+    const d=`M ${x1} ${y1} C ${x1} ${my}, ${x2} ${my}, ${x2} ${y2}`;
+    const path=document.createElementNS(NS,"path");
+    path.setAttribute("d",d);
+    path.setAttribute("class","edge"+(style==="dash"?" dash":""));
+    svg.appendChild(path);
+    if(lab){
+      const tx=document.createElementNS(NS,"text");
+      tx.setAttribute("x",(x1+x2)/2 + (style==="dash"?-6:6));
+      tx.setAttribute("y",my-3);
+      tx.setAttribute("text-anchor","middle");
+      tx.setAttribute("class","edge-lab");
+      tx.textContent=lab;
+      svg.appendChild(tx);
+    }
+  });
+
+  // nodes
+  Object.values(NODES).forEach(n=>{
+    const g=document.createElementNS(NS,"g");
+    g.setAttribute("class","node-box "+(n.cls||""));
+    if(n.id){g.setAttribute("tabindex","0");g.setAttribute("role","link");
+      g.setAttribute("aria-label",n.t);}
+    const r=document.createElementNS(NS,"rect");
+    r.setAttribute("x",n.x-n.w/2);r.setAttribute("y",n.y-n.h/2);
+    r.setAttribute("width",n.w);r.setAttribute("height",n.h);
+    r.setAttribute("rx",n.cls==="hub"?16:11);
+    g.appendChild(r);
+    const t=document.createElementNS(NS,"text");
+    t.setAttribute("x",n.x);t.setAttribute("y",n.s?n.y-2:n.y+1);
+    t.setAttribute("text-anchor","middle");t.setAttribute("dominant-baseline","middle");
+    t.setAttribute("class","n-title");t.setAttribute("font-size",n.cls==="hub"?"12.5":"15");
+    t.textContent=n.t;g.appendChild(t);
+    if(n.s){
+      const s=document.createElementNS(NS,"text");
+      s.setAttribute("x",n.x);s.setAttribute("y",n.y+13);
+      s.setAttribute("text-anchor","middle");s.setAttribute("class","n-sub");
+      s.setAttribute("font-size","10.5");s.textContent=n.s;g.appendChild(s);
+    }
+    if(n.id){
+      const go=()=>{const el=document.getElementById(n.id);
+        if(el){el.scrollIntoView({behavior:"smooth",block:"center"});
+          el.animate?el.animate([{boxShadow:"0 0 0 0 rgba(26,138,79,.5)"},
+            {boxShadow:"0 0 0 6px rgba(26,138,79,0)"}],{duration:900}):0;}};
+      g.addEventListener("click",go);
+      g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}});
+    }
+    svg.appendChild(g);
+  });
+})();
+
+/* ============================================================
+   2) CARDS — rendered from a spec so code/diff stay consistent
+   ============================================================ */
+// helpers to mark up code lines
+function L(kind, html){return {k:kind,h:html};}            // kind: ctx|add|chg
+const G={ // tiny syntax shorthands
+  kw:s=>`<span class="kw">${s}</span>`, num:s=>`<span class="num">${s}</span>`,
+  fn:s=>`<span class="fn">${s}</span>`, cm:s=>`<span class="cm">${s}</span>`, st:s=>`<span class="st">${s}</span>`,
+};
+
+const SECTIONS=[
+ {idx:"00",title:"Baseline",sub:"No extra state at all — just step against the gradient. Everything below is this line, plus memory.",
+  cards:[
+   {id:"c-sgd",name:"SGD",line:["the floor",""],
+    state:[["none — 0 tensors","none"]],
+    formula:`θ ← θ − η·g`,
+    code:[
+      L("ctx",`${G.kw('for')} p ${G.kw('in')} params:`),
+      L("ctx",`    g = p.grad`),
+      L("ctx",`    p.${G.fn('add_')}(g, alpha=${G.num('-lr')})            ${G.cm('# the step')}`),
+    ]},
+  ]},
+
+ {idx:"01",title:"First-moment methods",sub:`Spend one tensor on velocity — an EMA<a class="fnref" href="#fn-ema">1</a> of the gradient direction (its first moment<a class="fnref" href="#fn-first">2</a>) — to smooth the path and roll through noise.`,
+  cards:[
+   {id:"c-momentum",name:"Momentum",line:["SGD","velocity buffer v"],
+    state:[[`v — first moment<a class="fnref" href="#fn-first">2</a>`,"new"]],
+    formula:`v ← <span class="hl">μ·v + g</span>&nbsp;&nbsp;<span class="lab">accumulate direction</span><br>θ ← θ − η·<span class="hl">v</span>`,
+    code:[
+      L("ctx",`${G.kw('for')} p ${G.kw('in')} params:`),
+      L("ctx",`    g = p.grad`),
+      L("add",`    v = state[p][${G.st("'v'")}]`),
+      L("add",`    v.${G.fn('mul_')}(mu).${G.fn('add_')}(g)         ${G.cm('# v = μv + g')}`),
+      L("chg",`    p.${G.fn('add_')}(v, alpha=${G.num('-lr')})        ${G.cm('# step on v, not g')}`),
+    ]},
+   {id:"c-nesterov",name:"Nesterov",line:["Momentum","look-ahead gradient"],
+    state:[["v — first moment","inh"]],
+    formula:`v ← μ·v + g<br>θ ← θ − η·<span class="hl">(g + μ·v)</span>&nbsp;<span class="lab">peek ahead</span>`,
+    code:[
+      L("ctx",`    g = p.grad`),
+      L("ctx",`    v = state[p][${G.st("'v'")}]`),
+      L("ctx",`    v.${G.fn('mul_')}(mu).${G.fn('add_')}(g)`),
+      L("add",`    upd = g.${G.fn('add')}(v, alpha=mu)      ${G.cm('# look-ahead')}`),
+      L("chg",`    p.${G.fn('add_')}(upd, alpha=${G.num('-lr')})`),
+    ]},
+  ]},
+
+ {idx:"02",title:"Diagonal second-moment methods",sub:`Spend one tensor on a per-parameter scale — squared-gradient history, the second moment<a class="fnref" href="#fn-second">3</a> — so each weight gets its own learning rate. This is the RMSProp lineage.`,
+  cards:[
+   {id:"c-adagrad",name:"AdaGrad",line:["SGD","Σ g² accumulator"],
+    state:[[`s — Σ g² (second moment<a class="fnref" href="#fn-second">3</a>)`,"new"]],
+    formula:`s ← <span class="hl">s + g²</span>&nbsp;<span class="lab">grows forever</span><br>θ ← θ − η·g ⁄ <span class="hl">(√s + ε)</span>`,
+    code:[
+      L("ctx",`    g = p.grad`),
+      L("add",`    s = state[p][${G.st("'s'")}]`),
+      L("add",`    s.${G.fn('addcmul_')}(g, g, value=${G.num('1.0')})   ${G.cm('# s += g²')}`),
+      L("chg",`    p.${G.fn('addcdiv_')}(g, s.${G.fn('sqrt')}()+eps, value=${G.num('-lr')})`),
+    ]},
+   {id:"c-rmsprop",name:"RMSProp",line:["AdaGrad","decay the accumulator"],
+    state:[["s — EMA of g²","inh"]],
+    formula:`<span class="lab">one edit: sum → moving average</span><br>s ← <span class="hl">ρ·s + (1−ρ)·g²</span><br>θ ← θ − η·g ⁄ (√s + ε)`,
+    code:[
+      L("ctx",`    g = p.grad`),
+      L("ctx",`    s = state[p][${G.st("'s'")}]`),
+      L("chg",`    s.${G.fn('mul_')}(rho).${G.fn('addcmul_')}(g, g, value=${G.num('1-rho')})  ${G.cm('# EMA, not Σ')}`),
+      L("ctx",`    p.${G.fn('addcdiv_')}(g, s.${G.fn('sqrt')}()+eps, value=${G.num('-lr')})`),
+    ]},
+  ]},
+
+ {idx:"03",title:"First + second moment",sub:"Keep both tensors. This is where the modern defaults live — Adam and its side branches.",
+  cards:[
+   {id:"c-adam",name:"Adam",line:["RMSProp",`+ momentum + bias-correction<a class="fnref" href="#fn-bias">4</a>`],
+    state:[[`m — first moment<a class="fnref" href="#fn-first">2</a>`,"new"],[`v — EMA g² (2nd<a class="fnref" href="#fn-second">3</a>)`,"inh"]],
+    formula:`m ← β₁m + (1−β₁)g&nbsp;&nbsp;<span class="lab">momentum</span><br>v ← <span class="hl">β₂v + (1−β₂)g²</span>&nbsp;<span class="lab">RMSProp</span><br>θ ← θ − η·m̂ ⁄ (√v̂ + ε)`,
+    code:[
+      L("ctx",`    g = p.grad;  t += ${G.num('1')}`),
+      L("add",`    m = state[p][${G.st("'m'")}];  v = state[p][${G.st("'v'")}]`),
+      L("add",`    m.${G.fn('mul_')}(b1).${G.fn('add_')}(g, alpha=${G.num('1-b1')})        ${G.cm('# 1st moment')}`),
+      L("ctx",`    v.${G.fn('mul_')}(b2).${G.fn('addcmul_')}(g, g, value=${G.num('1-b2')}) ${G.cm('# 2nd (RMSProp)')}`),
+      L("add",`    mh = m / (${G.num('1')} - b1**t)                 ${G.cm('# bias correction')}`),
+      L("add",`    vh = v / (${G.num('1')} - b2**t)`),
+      L("chg",`    p.${G.fn('addcdiv_')}(mh, vh.${G.fn('sqrt')}()+eps, value=${G.num('-lr')})`),
+    ]},
+   {id:"c-adamw",name:"AdamW",line:["Adam","decoupled weight decay"],
+    state:[["m, v","inh"]],
+    formula:`<span class="lab">decay θ directly, off the gradient path</span><br>θ ← <span class="hl">(1 − η·λ)·θ</span>&nbsp;then Adam step<br><span class="lab">why: L2-in-the-gradient gets divided by √v like everything else — big-gradient weights barely decay. Decoupling restores uniform decay.</span>`,
+    code:[
+      L("ctx",`    g = p.grad;  t += ${G.num('1')}`),
+      L("add",`    p.${G.fn('mul_')}(${G.num('1')} - lr*wd)                ${G.cm('# decoupled decay')}`),
+      L("ctx",`    ${G.cm('# ... identical Adam moment update ...')}`),
+      L("ctx",`    p.${G.fn('addcdiv_')}(mh, vh.${G.fn('sqrt')}()+eps, value=${G.num('-lr')})`),
+    ]},
+   {id:"c-lion",name:"Lion",line:["Adam","drop v, take the sign"],
+    state:[["m — first moment only","inh"],["v dropped","none"]],
+    formula:`u ← <span class="hl">sign</span>(β₁m + (1−β₁)g)&nbsp;<span class="lab">no √v</span><br>θ ← θ − η·u&nbsp;;&nbsp; m ← β₂m + (1−β₂)g<br><span class="lab">sign(x) = x ⁄ √x² — Adam with the v-EMA collapsed to the instant. Same instinct as Muon, per coordinate instead of per matrix.</span>`,
+    code:[
+      L("ctx",`    g = p.grad`),
+      L("ctx",`    m = state[p][${G.st("'m'")}]`),
+      L("chg",`    u = m.${G.fn('mul')}(b1).${G.fn('add')}(g, alpha=${G.num('1-b1')}).${G.fn('sign')}()  ${G.cm('# sign update')}`),
+      L("chg",`    p.${G.fn('add_')}(u, alpha=${G.num('-lr')})             ${G.cm('# no 1/√v scaling')}`),
+      L("chg",`    m.${G.fn('mul_')}(b2).${G.fn('add_')}(g, alpha=${G.num('1-b2')})  ${G.cm('# update after')}`),
+    ]},
+  ]},
+
+ {idx:"04",title:"Factored second-moment",sub:"Adam's per-parameter scale, but refusing to store a full v tensor for matrices. The compression is on the second moment — not on momentum.",
+  cards:[
+   {id:"c-adafactor",name:"Adafactor",line:["Adam / RMSProp","factor v into row × col"],
+    state:[["r — row stats","new"],["c — col stats","new"],["full v avoided","none"]],
+    formula:`<span class="lab">for a matrix g (R×C), keep two vectors</span><br>r ← β₂r + (1−β₂)·mean<sub>col</sub>(g²)<br>c ← β₂c + (1−β₂)·mean<sub>row</sub>(g²)<br>v̂ ← <span class="hl">(r ⊗ c) ⁄ Σr</span>&nbsp;<span class="lab">≈ full v — the optimal rank-1 fit, R·C floats stored as R + C</span>`,
+    code:[
+      L("ctx",`    g = p.grad                      ${G.cm('# shape (R, C)')}`),
+      L("chg",`    r = state[p][${G.st("'r'")}]            ${G.cm('# len R, not R·C')}`),
+      L("chg",`    c = state[p][${G.st("'c'")}]            ${G.cm('# len C')}`),
+      L("add",`    r.${G.fn('mul_')}(b2).${G.fn('add_')}((g*g).${G.fn('mean')}(${G.num('1')}), alpha=${G.num('1-b2')})`),
+      L("add",`    c.${G.fn('mul_')}(b2).${G.fn('add_')}((g*g).${G.fn('mean')}(${G.num('0')}), alpha=${G.num('1-b2')})`),
+      L("add",`    v = r[:,${G.kw('None')}] * c[${G.kw('None')},:] / r.${G.fn('mean')}()  ${G.cm('# rebuild ≈ v')}`),
+      L("chg",`    p.${G.fn('addcdiv_')}(g, v.${G.fn('sqrt')}()+eps, value=${G.num('-lr')})`),
+    ]},
+  ]},
+
+ {idx:"05",title:"Structured preconditioners",sub:`Leave the diagonal world: transform the whole gradient matrix instead of scaling each weight — a structured preconditioner<a class="fnref" href="#fn-precond">5</a>. PSGD (learned), Shampoo (Gram), K-FAC (Fisher<a class="fnref" href="#fn-fisher">9</a>) and Muon (orthogonalized momentum) are the stochastic matrix methods. L-BFGS is a sibling but a different beast — a secant / quasi-Newton method<a class="fnref" href="#fn-secant">8</a> that infers curvature from gradient differences, and the one deterministic / full-batch member of the family.`,
+  cards:[
+   {id:"c-psgd",name:"PSGD",line:["SGD","learned preconditioner P = QᵀQ"],
+    state:[["Q — learned precond.","new"]],
+    formula:`<span class="lab">learn Q so P=QᵀQ whitens gradients</span><br>θ ← θ − η·<span class="hl">QᵀQ·g</span>`,
+    code:[
+      L("ctx",`    g = p.grad`),
+      L("add",`    Q = state[p][${G.st("'Q'")}]`),
+      L("add",`    ${G.fn('update_Q_')}(Q, g, noise)          ${G.cm('# criterion-based')}`),
+      L("add",`    g = Q.T @ (Q @ g)               ${G.cm('# apply P = QᵀQ')}`),
+      L("chg",`    p.${G.fn('add_')}(g, alpha=${G.num('-lr')})`),
+    ]},
+   {id:"c-shampoo",name:"Shampoo",line:["full-matrix AdaGrad","Kronecker-factor the Σ g·gᵀ accumulator"],
+    state:[["L, R — Gram matrices","new"]],
+    formula:`L ← L + g·gᵀ&nbsp;&nbsp;R ← R + gᵀ·g&nbsp;<span class="lab">AdaGrad's Σ g², grown into matrices</span><br>θ ← θ − η·<span class="hl">L<sup>−¼</sup>·g·R<sup>−¼</sup></span>&nbsp;<span class="lab">−¼ each side ⇒ −½ combined, matching AdaGrad's 1⁄√s</span>`,
+    code:[
+      L("ctx",`    g = p.grad                      ${G.cm('# matrix')}`),
+      L("add",`    Lp = state[p][${G.st("'L'")}]; Rp = state[p][${G.st("'R'")}]`),
+      L("add",`    Lp += g @ g.T;  Rp += g.T @ g  ${G.cm('# accumulate')}`),
+      L("add",`    g = ${G.fn('mpow')}(Lp,-${G.num('0.25')}) @ g @ ${G.fn('mpow')}(Rp,-${G.num('0.25')})`),
+      L("chg",`    p.${G.fn('add_')}(g, alpha=${G.num('-lr')})`),
+    ]},
+   {id:"c-kfac",name:"K-FAC",line:["SGD",`Kronecker-factored Fisher<a class="fnref" href="#fn-fisher">9</a>`],
+    state:[["A, G — layer factors","new"]],
+    formula:`<span class="lab">approx Fisher F ≈ A ⊗ G per layer → natural gradient</span><br>θ ← θ − η·<span class="hl">A⁻¹·g·G⁻¹</span>`,
+    code:[
+      L("ctx",`    g = grad_W                      ${G.cm('# layer weight')}`),
+      L("add",`    A = ${G.fn('cov')}(activations)         ${G.cm('# input side')}`),
+      L("add",`    Gm = ${G.fn('cov')}(grad_outputs)      ${G.cm('# output side')}`),
+      L("add",`    g = ${G.fn('inv')}(A) @ g @ ${G.fn('inv')}(Gm)   ${G.cm('# precondition')}`),
+      L("chg",`    W.${G.fn('add_')}(g, alpha=${G.num('-lr')})`),
+    ]},
+   {id:"c-lbfgs",name:"L-BFGS",line:["BFGS","limited-memory: keep last m pairs"],
+    state:[["{sᵢ, yᵢ} secant pairs","new"],["deterministic · full-batch","det"]],
+    formula:`<span class="lab">secant condition<a class="fnref" href="#fn-secant">8</a></span>&nbsp; B·s = y&nbsp;&nbsp;<span class="lab">s=Δθ, y=Δg</span><br>θ ← θ − t·<span class="hl">H⁻¹·g</span>&nbsp;<span class="lab">H⁻¹ rebuilt from (s,y)</span>`,
+    code:[
+      L("ctx",`    g = p.grad`),
+      L("add",`    s_hist, y_hist = state[${G.st("'sy'")}]   ${G.cm('# last m (Δθ, Δg)')}`),
+      L("add",`    d = ${G.fn('two_loop')}(g, s_hist, y_hist)  ${G.cm('# ≈ H⁻¹g via secant')}`),
+      L("chg",`    t = ${G.fn('line_search')}(d)              ${G.cm('# needs a stable objective')}`),
+      L("chg",`    p.${G.fn('add_')}(d, alpha=-t)             ${G.cm('# full-batch step')}`),
+      L("add",`    ${G.fn('store_pair_')}(s_hist, y_hist, p, g)`),
+    ]},
+   {id:"c-muon",name:"Muon",line:["Momentum + Shampoo",`orthogonalize<a class="fnref" href="#fn-ortho">6</a> via Newton–Schulz<a class="fnref" href="#fn-ns">7</a>`],
+    state:[["m — first moment","inh"],[`Newton–Schulz orthogonalize<a class="fnref" href="#fn-ns">7</a>`,"new"],["no v · no accumulation","none"]],
+    formula:`M ← μ·M + G&nbsp;&nbsp;<span class="lab">momentum, kept as a matrix</span><br>W ← W − η·<span class="hl">Ortho(M)</span><br><span class="lab">Ortho(M) := UVᵀ<a class="fnref" href="#fn-ortho">6</a> where M = UΣVᵀ — keep the directions, set every singular value to 1. Equals (MMᵀ)<sup>−½</sup>·M.</span><br><span class="lab">exactly Shampoo with L=MMᵀ, R=MᵀM and no accumulation: L<sup>−¼</sup>·M·R<sup>−¼</sup> = UVᵀ</span>`,
+    code:[
+      L("ctx",`    g = p.grad                      ${G.cm('# 2-D weight only')}`),
+      L("ctx",`    m = state[p][${G.st("'m'")}]`),
+      L("ctx",`    m.${G.fn('mul_')}(mu).${G.fn('add_')}(g)              ${G.cm('# momentum (Nesterov in practice)')}`),
+      L("add",`    o = ${G.fn('newton_schulz')}(m, steps=${G.num('5')})   ${G.cm('# → UVᵀ by matmuls, no SVD')}`),
+      L("chg",`    p.${G.fn('add_')}(o, alpha=${G.num('-lr')})            ${G.cm('# step on orthogonalized M')}`),
+      L("ctx",`    ${G.cm('# scalars / embeds / head → AdamW')}`),
+    ]},
+  ]},
+];
+
+(function buildCards(){
+  const zone=document.getElementById("cardzone");
+  const chipClass={new:"chip new",inh:"chip",none:"chip none"};
+  SECTIONS.forEach(sec=>{
+    const head=document.createElement("div");
+    head.className="section-head";
+    head.innerHTML=`<span class="idx">${sec.idx}</span><h2>${sec.title}</h2>`;
+    zone.appendChild(head);
+    const sub=document.createElement("p");
+    sub.className="section-sub";sub.innerHTML=sec.sub;zone.appendChild(sub);
+    const grid=document.createElement("div");grid.className="cards";
+    sec.cards.forEach(c=>{
+      const card=document.createElement("article");
+      card.className="card";card.id=c.id;
+      const chips=c.state.map(([txt,k])=>`<span class="${chipClass[k]||'chip'}">${txt}</span>`).join("");
+      const lines=c.code.map(l=>{
+        const g=l.k==="add"?"+":l.k==="chg"?"~":" ";
+        return `<span class="ln ${l.k}"><span class="gutter">${g}</span>${l.h}</span>`;
+      }).join("");
+      const lin = c.line[1]
+        ? `<span class="from">${c.line[0]}</span> <span class="plus">+ ${c.line[1]}</span>`
+        : `<span class="from">${c.line[0]}</span>`;
+      card.innerHTML=`
+        <div class="card-head">
+          <h3 class="card-name"><span class="dot"></span>${c.name}</h3>
+          <p class="lineage">${lin}</p>
+        </div>
+        <div class="state">${chips}</div>
+        <div class="formula">${c.formula}</div>
+        <div class="code-wrap">
+          <div class="code-top"><i class="pip"></i><i class="pip"></i><i class="pip"></i><span>step.py</span></div>
+          <pre>${lines}</pre>
+        </div>`;
+      grid.appendChild(card);
+    });
+    zone.appendChild(grid);
+  });
+})();
+</script>

@@ -24,6 +24,7 @@ ASSETS_DIR = ROOT / "assets"
 POSTS_DIR = ROOT / "_posts"
 DATA_DIR = ROOT / "_data"
 PAGES = ["index.md", "blog.md", "talks.md", "bookshelf.md", "404.html"]
+STANDALONE_HTML_PAGES = ["optimizer.html"]
 
 
 SITE = {
@@ -367,12 +368,25 @@ def write_support_files(posts: list[Document]) -> None:
     (OUTPUT_DIR / ".nojekyll").write_text("", encoding="utf-8")
 
 
+def copy_standalone_html_pages() -> None:
+    for name in STANDALONE_HTML_PAGES:
+        source = ROOT / name
+        if not source.exists():
+            continue
+
+        slug = source.stem
+        for output_path in [OUTPUT_DIR / name, OUTPUT_DIR / slug / "index.html"]:
+            ensure_parent(output_path)
+            shutil.copy2(source, output_path)
+
+
 def main() -> None:
     env = Environment(autoescape=True)
     nav_links = load_navigation()
     copy_assets()
     posts = build_posts(env, nav_links)
     build_pages(env, nav_links)
+    copy_standalone_html_pages()
     write_support_files(posts)
 
 
