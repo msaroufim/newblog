@@ -8,6 +8,7 @@ I also write on [Medium](https://medium.com/@marksaroufim) and [Substack](http:/
 
 ## Posts
 
+- [The Optimizer Lineage](/optimizer/)
 - [1 line linux distro review](/2025/11/13/one-line-linux-distro-review.html)
 - [PyTorch needs great Systems Engineers](/2025/04/16/pytorch-needs-great-systems-engineers.html)
 - [Why won't Llama 13B fit on my 4090](/2023/09/18/llama13b-4090.html)
