@@ -116,6 +116,7 @@
   .sgd .n-title{fill:#fff}
   .sgd .n-sub{fill:#9fb0bb}
   .node-box.det rect{fill:#fff;stroke:#9a5a14;stroke-dasharray:5 4}
+  .node-box.zo rect{fill:#fff;stroke:#8a4fb0;stroke-dasharray:2 3}
   .node-box.det:hover rect{stroke:#7a4710;filter:drop-shadow(0 4px 10px rgba(154,90,20,.2))}
   .node-box.det:focus-visible rect{stroke:#7a4710}
   .node-box.det .n-sub{fill:#9a5a14}
@@ -292,6 +293,8 @@
     a <b>second moment</b><a class="fnref" href="#fn-second">3</a> (per-parameter scale), or a <b>structured preconditioner</b><a class="fnref" href="#fn-precond">5</a> (whole-matrix curvature).
     Adam is literally the merge of the momentum and RMSProp branches. The dashed node is the one
     <b>deterministic / full-batch</b> method (L-BFGS) — everything else is built for stochastic mini-batches.
+    The dotted node up top is the <b>gradient-free</b> world (ES, MeZO, EGGROLL): it changes where g comes
+    from, not what you do with it.
     Tap any node to jump to its card; numbered marks like these jump to short footnotes at the bottom.</p>
   <div class="map-shell">
     <svg id="tree" viewBox="0 0 1260 780" role="img" aria-label="Optimizer family tree diagram"></svg>
@@ -344,6 +347,7 @@
     <li><b>Slide σ up:</b> SGD gets drunk while the EMA methods glide (footnotes 1–2, live). Then enable <b>L-BFGS</b>: untouchable at σ = 0, broken the moment noise corrupts its (s, y) pairs — exactly why it's the dashed node.</li>
     <li><b>Lion &amp; Muon</b> take fixed-magnitude steps (sign / unit-norm), so they never fully sit still — the real ones lean on lr decay and weight decay to land. And <b>AdamW</b> makes decay visible: it parks slightly short of the <span style="color:var(--green-deep)">+</span>, dragged toward the origin.</li>
     <li><b>Crank η</b> to ≥0.1 on the ravine: SGD flies off (✗) while the adaptive family shrugs — per-parameter scaling as a stabilizer.</li>
+    <li><b>ZO / SPSA</b> uses no gradient at all — two loss probes per step. Watch it wiggle even at σ = 0: its randomness is the estimator itself. In 2-D it keeps up with SGD; in a billion dimensions that wiggle is the whole battle (hence EGGROLL's population tricks).</li>
     <li><b>Four minima:</b> from the same start, different optimizers land in <i>different</i> basins — the optimizer isn't a neutral pipe to “the” solution, it's part of what gets learned.</li>
   </ul>
 </div>
@@ -373,6 +377,8 @@
         <p>Don't compute the Hessian — <i>infer</i> it from how the gradient moved: demand <code>B·s = y</code> where <code>s = Δθ</code> and <code>y = Δg</code> (the secant condition, the multivariate cousin of a finite-difference slope). BFGS refines an estimate with each new (s, y) pair; L-BFGS keeps only the last m pairs and rebuilds H⁻¹g on the fly. Mini-batch noise corrupts y (the gradient changed because the <i>batch</i> changed, not θ), which is why this family stays full-batch.</p></li>
       <li id="fn-fisher"><span class="term">Fisher information / natural gradient</span>
         <p>The Fisher matrix F measures how much the model's <i>output distribution</i> shifts per unit change of each parameter. Stepping along <code>F⁻¹·g</code> — the natural gradient — takes uniform steps in output space rather than parameter space, making the update invariant to how the network happens to be parameterized. K-FAC makes F tractable per layer as a Kronecker product <code>A ⊗ G</code> (input-activation covariance ⊗ output-gradient covariance), so <code>F⁻¹g ≈ A⁻¹·g·G⁻¹</code>.</p></li>
+      <li id="fn-zo"><span class="term">Zeroth-order / evolution strategies</span>
+        <p>Methods that never see a true gradient — they probe the loss directly. The two-point estimate <code>ĝ = [ℒ(θ+εz) − ℒ(θ−εz)] ⁄ 2ε · z</code> measures the slope along one random direction z: in expectation an unbiased (but very noisy) sketch of the gradient of a slightly smoothed loss. Evolution strategies average many such perturbations weighted by fitness; larger populations mean less noise. The appeal: only forward passes needed — tiny memory, and non-differentiable objectives are fine. The cost: each probe yields one scalar, so high dimensions demand many probes or structured noise (EGGROLL's low-rank perturbations).</p></li>
     </ol>
   </div>
 </div>
@@ -388,6 +394,7 @@
       <li><b>PSGD, Shampoo, K-FAC</b> leave the diagonal world: instead of one scalar per parameter they apply a <i>matrix</i> preconditioner (learned, Gram-based, or Fisher-based) to the whole gradient — all in the stochastic mini-batch regime. Shampoo in particular is best read as <b>full-matrix AdaGrad made affordable</b>: the ideal accumulator <code>Σ g·gᵀ</code> over all parameters is Kronecker-factored into a left and right matrix per layer.</li>
       <li><b>L-BFGS sits apart.</b> It's a <i>secant / quasi-Newton</i> method — curvature inferred from successive gradient <i>differences</i> (<code>B·s = y</code>), making it a <b>sibling</b> of Shampoo, not a descendant. It's also the lone <b>deterministic / full-batch</b> method here: mini-batch noise corrupts the (s, y) pairs and breaks the line search, which is why it's rare in deep learning.</li>
       <li><b>Muon</b> is the newest branch: keep <i>only</i> momentum, then <b>orthogonalize</b> that momentum matrix (<code>Ortho(M) = UVᵀ</code>) with a few cheap Newton–Schulz steps — no <code>v</code>, no accumulation. And the Shampoo link is <i>exact</i>, not a metaphor: plug the instantaneous <code>L = MMᵀ</code>, <code>R = MᵀM</code> into Shampoo's <code>L^−¼·M·R^−¼</code> and the algebra collapses to precisely <code>UVᵀ</code>.</li>
+      <li><b>Zeroth-order sits outside the master equation entirely.</b> MeZO probes the loss along one random direction (two forward passes, no backprop, inference-level memory); evolution strategies average a whole population of perturbations; EGGROLL makes that population affordable at LLM scale with rank-r noise. They trade gradient information for memory and generality — a different question, not a different answer.</li>
       <li><b>One trick, two scales.</b> <code>sign(m) = m/√m²</code> normalizes a vector <i>per coordinate</i>; <code>Ortho(M) = UVᵀ</code> normalizes a matrix <i>per singular direction</i>. Lion and Muon are the same instinct — keep the direction, flatten the magnitudes — applied to different geometry. And Adam sits between them: it divides by <code>√v</code>, a smoothed version of the same per-coordinate normalization.</li>
     </ul>
   </div>
@@ -400,6 +407,7 @@
    ============================================================ */
 const NODES = {
   sgd:    {x:600,y:50, w:138,h:46,t:"SGD",s:"θ -= lr·g",cls:"sgd",id:"c-sgd"},
+  zo:     {x:178,y:50, w:200,h:46,t:"Zeroth-order",s:"ES · MeZO · EGGROLL",cls:"zo",id:"c-mezo"},
 
   hVel:   {x:180,y:152,w:150,h:32,t:"+ 1st moment",s:"",cls:"hub"},
   hDiag:  {x:600,y:152,w:182,h:32,t:"+ 2nd moment (diag)",s:"",cls:"hub"},
@@ -463,6 +471,21 @@ const EDGES = [
       svg.appendChild(tx);
     }
   });
+
+  // custom horizontal edge: zeroth-order → SGD (no ∇ at all)
+  {
+    const z=NODES.zo,s=NODES.sgd;
+    const x1=z.x+z.w/2,x2=s.x-s.w/2,y=z.y;
+    const path=document.createElementNS(NS,"path");
+    path.setAttribute("d",`M ${x1} ${y} L ${x2} ${y}`);
+    path.setAttribute("class","edge dash");
+    svg.appendChild(path);
+    const tx=document.createElementNS(NS,"text");
+    tx.setAttribute("x",(x1+x2)/2);tx.setAttribute("y",y-8);
+    tx.setAttribute("text-anchor","middle");tx.setAttribute("class","edge-lab");
+    tx.textContent="no ∇ at all — estimate ĝ from loss evals";
+    svg.appendChild(tx);
+  }
 
   // nodes
   Object.values(NODES).forEach(n=>{
@@ -683,6 +706,34 @@ const SECTIONS=[
       L("ctx",`    ${G.cm('# scalars / embeds / head → AdamW')}`),
     ]},
   ]},
+
+ {idx:"06",title:"Zeroth-order — no gradient at all",sub:`Everything above assumes backprop hands you g. The gradient-free family<a class="fnref" href="#fn-zo">10</a> answers the question <i>before</i> the master equation: what if you only get loss values? Probe the loss directly (MeZO / SPSA) or average a whole population of perturbations (evolution strategies — and EGGROLL, which makes ES affordable at LLM scale). Different question, so it hangs off the tree as a dotted node.`,
+  cards:[
+   {id:"c-mezo",name:"MeZO / ZO-SGD",line:["SGD","replace backprop with a 2-point probe"],
+    state:[[`one random seed — no g, no activations`,"new"],["memory ≈ inference","none"]],
+    formula:`z ~ N(0, I)&nbsp;<span class="lab">from a stored seed</span><br>ĝ ← <span class="hl">[ℒ(θ+εz) − ℒ(θ−εz)] ⁄ 2ε</span> · z<br>θ ← θ − η·ĝ`,
+    noteLabel:"why it's exciting (and slow)",
+    note:`The bracket is a secant<a class="fnref" href="#fn-secant">8</a> along one random direction — a directional slope measured with <b>two forward passes and zero backprop</b>. Memory collapses to inference level (MeZO fine-tunes a 30B model on a single GPU), and the seed regenerates z on demand so nothing big is ever stored. The price is information: one probe carries ~1/d of the gradient, so convergence degrades with dimension — workable for fine-tuning, brutal for pretraining.`,
+    code:[
+      L("ctx",`${G.kw('for')} step ${G.kw('in')} ${G.fn('range')}(T):`),
+      L("add",`    z = ${G.fn('randn_like')}(p, seed=s)   ${G.cm('# regenerate, never store')}`),
+      L("add",`    lp = ${G.fn('loss')}(p + eps*z)        ${G.cm('# forward pass #1')}`),
+      L("add",`    lm = ${G.fn('loss')}(p - eps*z)        ${G.cm('# forward pass #2')}`),
+      L("chg",`    p.${G.fn('add_')}(z, alpha=${G.num('-lr')}*(lp-lm)/(${G.num('2')}*eps))`),
+    ]},
+   {id:"c-eggroll",name:"ES / EGGROLL",line:["zeroth-order","a population instead of one probe"],
+    state:[["N perturbation seeds","new"],["fitness scores f₁…f_N","new"]],
+    formula:`E_k = <span class="hl">A_k·B_kᵀ</span>&nbsp;<span class="lab">EGGROLL: rank-r noise</span><br>f_k = ℒ(θ + σ·E_k)&nbsp;<span class="lab">score the population</span><br>θ ← θ − η·<span class="hl">Σ w_k·E_k</span>&nbsp;<span class="lab">fitness-weighted</span>`,
+    noteLabel:"the EGGROLL trick",
+    note:`ES estimates the gradient of a <b>smoothed</b> loss by averaging N random perturbations weighted by their scores — MeZO is the N = 1 special case, and more population means less estimator noise. Full-rank noise costs O(m·n) per member; EGGROLL swaps each perturbation for a rank-r outer product <code>A·Bᵀ</code> — O(r(m+n)) instead — so one batched forward pass can score a huge population. The payoff: evolution strategies at billion-parameter scale, no backprop, non-differentiable objectives welcome, even integer-only training.`,
+    code:[
+      L("ctx",`${G.kw('for')} k ${G.kw('in')} ${G.fn('range')}(N):           ${G.cm('# population')}`),
+      L("add",`    A, B = ${G.fn('lowrank_noise')}(k)   ${G.cm('# dW = A @ B.T')}`),
+      L("add",`    f[k] = ${G.fn('fitness')}(p + sig*A @ B.T)`),
+      L("add",`w = ${G.fn('zscore')}(f)                 ${G.cm('# rank the members')}`),
+      L("chg",`p += lr/(N*sig) * ${G.fn('wsum')}(w, noise)`),
+    ]},
+  ]},
 ];
 
 (function buildCards(){
@@ -811,6 +862,13 @@ const OPTS=[
   st:(s,p,g,lr)=>{s.G[0]+=g[0]*g[0];s.G[1]+=g[0]*g[1];s.G[2]+=g[1]*g[1];
    const S=msqrtInv(s.G);
    p[0]-=lr*(S[0]*g[0]+S[1]*g[1]);p[1]-=lr*(S[1]*g[0]+S[2]*g[1]);}},
+ {id:'zo',n:'ZO / SPSA',c:'#8a4fb0',m:1,dot:true,
+  mk:(land)=>({f:land.f}),
+  st:(s,p,g,lr)=>{                     // never touches g at all
+   const a=Math.random()*2*Math.PI,zx=Math.cos(a),zy=Math.sin(a);
+   const e=1e-3;
+   const gh=(s.f(p[0]+e*zx,p[1]+e*zy)-s.f(p[0]-e*zx,p[1]-e*zy))/(2*e);
+   p[0]-=lr*gh*zx;p[1]-=lr*gh*zy;}},
  {id:'lbfgs',n:'L-BFGS',c:'#9a5a14',m:1,dash:true,
   mk:(land)=>({S:[],Y:[],R:[],pp:null,pg:null,f:land.f}),
   st:(s,p,g,lr)=>{
@@ -952,6 +1010,7 @@ function draw(){
     if(!active.has(r.o.id))return;
     ctx.strokeStyle=r.o.c;ctx.lineWidth=2;ctx.globalAlpha=.85;
     if(r.o.dash)ctx.setLineDash([5,4]);
+    else if(r.o.dot)ctx.setLineDash([2,4]);
     ctx.beginPath();
     const h=r.hist;ctx.moveTo(X(h[0][0]),Y(h[0][1]));
     for(let i=1;i<h.length;i++)ctx.lineTo(X(h[i][0]),Y(h[i][1]));
