@@ -24,7 +24,7 @@ ASSETS_DIR = ROOT / "assets"
 POSTS_DIR = ROOT / "_posts"
 DATA_DIR = ROOT / "_data"
 PAGES = ["index.md", "blog.md", "talks.md", "bookshelf.md", "404.html"]
-STANDALONE_HTML_PAGES = ["optimizer.html"]
+STANDALONE_HTML_PAGES = ["optimizer.html", "gpu-scheduling.html"]
 
 
 SITE = {

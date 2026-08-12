@@ -1,0 +1,1675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Scheduling work on Blackwell — a field guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0e1218; --panel:#151b24; --panel2:#10151d; --line:#242e3d; --line-soft:#1b2330;
+  --text:#dbe3ef; --dim:#8d99ac; --faint:#5d6a7e;
+  --host:#5aa9e6; --dev:#54c9a2; --sm:#e2b155; --part:#b18ee0; --steal:#e8825a;
+  --code-bg:#0a0d13;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --sans:'Inter',system-ui,sans-serif;
+  --disp:'Space Grotesk',var(--sans);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:24px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15.5px;line-height:1.65;-webkit-font-smoothing:antialiased}
+a{color:var(--host);text-decoration:none}
+a:hover{text-decoration:underline}
+code{font-family:var(--mono);font-size:.88em;background:var(--code-bg);border:1px solid var(--line-soft);border-radius:4px;padding:.08em .35em;color:#c9d6e8}
+::selection{background:#2a4a6b}
+
+.layout{display:grid;grid-template-columns:264px 1fr;max-width:1240px;margin:0 auto}
+
+/* ---------- sidebar ---------- */
+nav.side{position:sticky;top:0;height:100vh;overflow-y:auto;padding:28px 18px 40px 24px;border-right:1px solid var(--line-soft);scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+.brand{font-family:var(--disp);font-weight:600;font-size:15px;letter-spacing:.02em;margin-bottom:2px}
+.brand .b{color:var(--dev)}
+.brand-sub{font-size:11.5px;color:var(--faint);font-family:var(--mono);margin-bottom:22px}
+.navgroup{margin-bottom:18px}
+.navgroup>span{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin-bottom:7px}
+.navgroup>span i{width:14px;height:3px;border-radius:2px;display:inline-block}
+.navgroup a{display:block;font-size:13.5px;color:var(--dim);padding:3.5px 8px;border-left:2px solid transparent;border-radius:0 4px 4px 0;line-height:1.4}
+.navgroup a:hover{color:var(--text);text-decoration:none;background:var(--panel)}
+.navgroup a.active{color:var(--text);background:var(--panel)}
+.g-host i{background:var(--host)} .g-dev i{background:var(--dev)} .g-data i{background:var(--steal)}
+.g-sm i{background:var(--sm)} .g-part i{background:var(--part)} .g-x i{background:var(--faint)}
+.g-host a.active{border-color:var(--host)} .g-dev a.active{border-color:var(--dev)} .g-data a.active{border-color:var(--steal)}
+.g-sm a.active{border-color:var(--sm)} .g-part a.active{border-color:var(--part)} .g-x a.active{border-color:var(--faint)}
+
+/* ---------- main ---------- */
+main{padding:40px 48px 96px;min-width:0}
+.wrap{max-width:820px}
+
+header.hero{margin-bottom:52px}
+.eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dev);margin-bottom:12px}
+h1{font-family:var(--disp);font-size:clamp(28px,4vw,40px);font-weight:600;line-height:1.12;letter-spacing:-.015em;margin-bottom:14px}
+.lede{color:var(--dim);font-size:16px;max-width:640px;margin-bottom:26px}
+
+/* hero timeline animation */
+.gantt{background:var(--panel2);border:1px solid var(--line-soft);border-radius:10px;padding:18px 20px 14px;margin-bottom:10px}
+.gantt .lane{display:grid;grid-template-columns:52px 1fr;align-items:center;gap:12px;height:26px}
+.lane b{font-family:var(--mono);font-weight:400;font-size:11px;color:var(--faint)}
+.track{position:relative;height:14px;background:var(--code-bg);border-radius:3px;overflow:hidden}
+.bar{position:absolute;top:2px;height:10px;border-radius:2px;opacity:.92}
+.b-host{background:var(--host)} .b-dev{background:var(--dev)} .b-sm{background:var(--sm)} .b-steal{background:var(--steal)}
+.gantt-cap{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:10px}
+@media (prefers-reduced-motion: no-preference){
+  .bar{animation:slide 6s linear infinite}
+  @keyframes slide{from{transform:translateX(-30px)}to{transform:translateX(0)}}
+  .pulse{animation:pulse 6s ease-in-out infinite}
+  @keyframes pulse{0%,55%{opacity:.15}70%,100%{opacity:.92}}
+}
+
+/* section chrome */
+section.layer{margin:64px 0 0}
+.layerhead{display:flex;align-items:baseline;gap:14px;border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:8px}
+.layerhead .tag{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;padding:3px 9px;border-radius:4px}
+.t-host{color:var(--host);background:rgba(90,169,230,.12)}
+.t-dev{color:var(--dev);background:rgba(84,201,162,.12)}
+.t-sm{color:var(--sm);background:rgba(226,177,85,.12)}
+.t-part{color:var(--part);background:rgba(177,142,224,.12)}
+.t-data{color:var(--steal);background:rgba(232,130,90,.12)}
+.p-data{color:var(--steal);background:rgba(232,130,90,.12)}
+.t-x{color:var(--dim);background:rgba(141,153,172,.12)}
+.layerhead h2{font-family:var(--disp);font-size:21px;font-weight:600;letter-spacing:-.01em}
+.layersub{color:var(--faint);font-size:13.5px;margin-bottom:8px}
+
+article.tech{margin-top:36px;padding-top:8px}
+article.tech h3{font-family:var(--disp);font-size:18px;font-weight:600;letter-spacing:-.005em;margin-bottom:8px;scroll-margin-top:24px}
+.badges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.badge{font-family:var(--mono);font-size:10.5px;padding:2.5px 8px;border-radius:99px;border:1px solid var(--line);color:var(--dim)}
+.badge.bw{border-color:rgba(84,201,162,.5);color:var(--dev)}
+.badge.hop{border-color:rgba(90,169,230,.45);color:var(--host)}
+article.tech p{margin-bottom:12px;color:#c5cedd}
+article.tech p b{color:var(--text);font-weight:600}
+
+.usebox{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);border-radius:8px;overflow:hidden;margin:14px 0}
+.usebox>div{background:var(--panel2);padding:12px 15px}
+.usebox h4{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;margin-bottom:7px}
+.usebox .yes h4{color:var(--dev)} .usebox .no h4{color:var(--steal)}
+.usebox ul{list-style:none}
+.usebox li{font-size:13.5px;color:var(--dim);padding-left:14px;position:relative;margin-bottom:5px;line-height:1.5}
+.usebox li::before{content:'';position:absolute;left:0;top:8px;width:5px;height:5px;border-radius:50%}
+.usebox .yes li::before{background:var(--dev)} .usebox .no li::before{background:var(--steal)}
+
+pre{background:var(--code-bg);border:1px solid var(--line-soft);border-radius:8px;padding:16px 18px;overflow-x:auto;margin:14px 0;font-family:var(--mono);font-size:12.8px;line-height:1.62;color:#c9d6e8;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+pre code{background:none;border:none;padding:0;font-size:inherit}
+.cm{color:#5d6a7e} .kw{color:#5aa9e6} .fn{color:#e2b155} .st{color:#54c9a2} .nm{color:#b18ee0} .pp{color:#e8825a}
+
+.note{border-left:3px solid var(--sm);background:rgba(226,177,85,.06);border-radius:0 6px 6px 0;padding:10px 14px;font-size:13.5px;color:var(--dim);margin:14px 0}
+.note b{color:var(--sm);font-weight:600}
+
+/* animated diagrams inside sections */
+.diagram{background:var(--panel2);border:1px solid var(--line-soft);border-radius:10px;padding:16px 18px 12px;margin:16px 0}
+.diagram .dcap{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-top:8px}
+.dl{display:grid;grid-template-columns:64px 1fr;align-items:center;gap:10px;height:24px}
+.dl b{font-family:var(--mono);font-weight:400;font-size:10.5px;color:var(--faint)}
+.dtrack{position:relative;height:13px;background:var(--code-bg);border-radius:3px}
+.dbar{position:absolute;top:2px;height:9px;border-radius:2px}
+.hatch{background:repeating-linear-gradient(45deg,transparent,transparent 3px,#2a3444 3px,#2a3444 5px);border:1px dashed #33405400;outline:1px dashed #334054;outline-offset:-1px}
+@media (prefers-reduced-motion: no-preference){
+  .grow{transform-origin:left;animation:grow 4.5s ease-in-out infinite}
+  @keyframes grow{0%,10%{transform:scaleX(0)}45%,100%{transform:scaleX(1)}}
+  .appear{animation:appear 4.5s ease-in-out infinite}
+  @keyframes appear{0%,40%{opacity:0}55%,100%{opacity:1}}
+  .appear2{animation:appear2 4.5s ease-in-out infinite}
+  @keyframes appear2{0%,60%{opacity:0}75%,100%{opacity:1}}
+  .flow{stroke-dasharray:6 5;animation:dashmove 1.2s linear infinite}
+  @keyframes dashmove{to{stroke-dashoffset:-11}}
+}
+.memmap svg{width:100%;height:auto;display:block}
+.memmap text{font-family:var(--mono)}
+
+/* worked example stages */
+.stage{display:grid;grid-template-columns:44px 1fr;gap:16px;margin-top:26px}
+.snum{font-family:var(--disp);font-weight:600;font-size:20px;color:var(--faint);border:1px solid var(--line);border-radius:8px;height:44px;display:flex;align-items:center;justify-content:center;background:var(--panel2)}
+.sbody{min-width:0}
+.sbody h3{font-family:var(--disp);font-size:16.5px;font-weight:600;margin-bottom:6px;line-height:1.35}
+.sbody h3 a{color:var(--text);border-bottom:1px dashed var(--faint)}
+.sbody h3 a:hover{color:var(--host);text-decoration:none;border-color:var(--host)}
+.sbody p{font-size:14.5px;color:#c5cedd;margin-bottom:8px}
+.sbody p b{color:var(--text)}
+.sbody p a{border-bottom:1px dashed rgba(90,169,230,.5)}
+.sbody p a:hover{text-decoration:none;border-bottom-style:solid}
+
+
+/* layer relation strips */
+.layerrel{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;font-size:13.5px;color:var(--dim);border:1px solid var(--line-soft);background:var(--panel2);border-radius:8px;padding:11px 14px;margin:12px 0 4px}
+.layerrel .regime{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;white-space:nowrap;padding:3px 9px;border-radius:99px;border:1px solid var(--line);color:var(--sm);margin-top:1px}
+.layerrel b{color:var(--text)}
+.layerrel a{border-bottom:1px dashed rgba(90,169,230,.5)}
+
+/* code tabs */
+.codeblock{margin:14px 0}
+.codeblock pre{margin:0;border-top-left-radius:0}
+.codetabs{display:flex;gap:2px}
+.ct{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;padding:4px 12px;background:var(--panel2);border:1px solid var(--line-soft);border-bottom:none;border-radius:6px 6px 0 0;color:var(--faint);cursor:pointer}
+.ct.active{color:var(--dev);background:var(--code-bg)}
+.ct:hover{color:var(--text)}
+/* decision table */
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin:16px 0}
+th{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);text-align:left;padding:8px 12px;border-bottom:1px solid var(--line)}
+td{padding:9px 12px;border-bottom:1px solid var(--line-soft);color:var(--dim);vertical-align:top}
+td:first-child{color:#c5cedd}
+td .pill{font-family:var(--mono);font-size:11px;padding:1.5px 7px;border-radius:99px;white-space:nowrap}
+.p-host{color:var(--host);background:rgba(90,169,230,.12)}
+.p-dev{color:var(--dev);background:rgba(84,201,162,.12)}
+.p-sm{color:var(--sm);background:rgba(226,177,85,.12)}
+.p-part{color:var(--part);background:rgba(177,142,224,.12)}
+
+.refs{font-size:13.5px;color:var(--dim)}
+.refs li{margin-bottom:6px}
+footer{margin-top:72px;padding-top:20px;border-top:1px solid var(--line-soft);font-family:var(--mono);font-size:11px;color:var(--faint)}
+
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr}
+  nav.side{position:static;height:auto;border-right:none;border-bottom:1px solid var(--line-soft);padding:20px}
+  .navgroup a{display:inline-block;border-left:none;padding:3px 8px}
+  main{padding:28px 20px 72px}
+  .usebox{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="side">
+  <div class="brand">SM<span class="b">/</span>sched</div>
+  <div class="brand-sub">blackwell field guide · 2026</div>
+
+  <div class="navgroup g-host"><span><i></i>Host &amp; launch</span>
+    <a href="#streams">Streams &amp; events</a>
+    <a href="#priorities">Stream priorities</a>
+    <a href="#mallocasync">Stream-ordered allocation</a>
+    <a href="#graphs">CUDA graphs</a>
+    <a href="#devgraphs">Device graph launch</a>
+    <a href="#condnodes">Conditional graph nodes</a>
+    <a href="#pdl">Programmatic dependent launch</a>
+    <a href="#lce">Launch completion events</a>
+    <a href="#streammemops">Memory ops &amp; semaphores</a>
+  </div>
+
+  <div class="navgroup g-dev"><span><i></i>Device-side grid</span>
+    <a href="#persistent">Persistent kernels &amp; stream-K</a>
+    <a href="#raster">Rasterization &amp; tile swizzle</a>
+    <a href="#clc">Cluster launch control</a>
+    <a href="#megakernel">Megakernels</a>
+    <a href="#coop">Cooperative launch &amp; grid sync</a>
+    <a href="#cdp">Dynamic parallelism</a>
+    <a href="#clusters">Clusters &amp; preferred dims</a>
+  </div>
+
+  <div class="navgroup g-sm"><span><i></i>Inside the SM</span>
+    <a href="#warpspec">Warp specialization</a>
+    <a href="#schedules">Cooperative vs ping-pong</a>
+    <a href="#asyncbar">Asynchronous barriers</a>
+    <a href="#pipelines">cuda::pipeline</a>
+  </div>
+
+  <div class="navgroup g-data"><span><i></i>Data movement</span>
+    <a href="#memmap">The Blackwell memory map</a>
+    <a href="#movematrix">Source→destination matrix</a>
+    <a href="#tma">TMA &amp; bulk async</a>
+    <a href="#cpasync">Per-thread cp.async</a>
+    <a href="#tmem">Tensor memory (TMEM)</a>
+    <a href="#dsmem">DSMEM &amp; cluster transfers</a>
+    <a href="#hostpaths">Host &amp; inter-GPU paths</a>
+    <a href="#overlap">The canonical overlap recipe</a>
+  </div>
+
+  <div class="navgroup g-part"><span><i></i>Partitioning</span>
+    <a href="#green">Green contexts</a>
+    <a href="#mps">MPS</a>
+    <a href="#mig">MIG &amp; time-slicing</a>
+  </div>
+
+  <div class="navgroup g-x"><span><i></i>Adjacent knobs</span>
+    <a href="#knobs">Sync domains, L2, occupancy</a>
+    <a href="#syncmodel">Synchronization model</a>
+    <a href="#completeness">Completeness checklist</a>
+    <a href="#gemm">Worked example: matmul</a>
+    <a href="#bfs">Worked example: irregular (BFS)</a>
+    <a href="#schools">CPU lineage: the schools</a>
+    <a href="#transfers">What transfers</a>
+    <a href="#nontransfers">What doesn't</a>
+    <a href="#duality">Where waiting work lives</a>
+    <a href="#consensus">What reached consensus</a>
+    <a href="#tuple">A working decision rule</a>
+    <a href="#profiler">Reading the profiler</a>
+    <a href="#latencies">Latency ladder</a>
+    <a href="#decision">Decision table</a>
+    <a href="#refs">References</a>
+  </div>
+</nav>
+
+<main><div class="wrap">
+
+<header class="hero">
+  <div class="eyebrow">GPU work scheduling · datacenter Blackwell first</div>
+  <h1>Scheduling work on Blackwell</h1>
+  <p class="lede">A comprehensive map of techniques for deciding <em>what runs where, and when</em> — and how data moves concurrently through host memory, HBM, L2, shared/cluster memory, registers, and TMEM. Checked against the CUDA 13.3 Programming Guide and Blackwell Tuning Guide (July 2026).</p>
+  <div class="note"><b>Scope and architecture warning</b> — the kernel deep dive targets datacenter Blackwell, principally <code>sm_100a</code>. Datacenter means <code>sm_100a</code> (B200/GB200) and <code>sm_103a</code> (B300/GB300 Ultra); note CUDA 13 renamed the former <code>sm_101</code> target to <code>sm_110</code> (Thor). Consumer/workstation <code>sm_120</code> is <em>not</em> “sm_100 plus more”: feature support is not monotonic by compute-capability number. Compile architecture-specific instructions for the exact <code>sm_*a</code> target and gate them at runtime. Portable host techniques still apply broadly.</div>
+  <table>
+    <thead><tr><th>Facility</th><th>Datacenter Blackwell</th><th>sm_120 family</th></tr></thead>
+    <tbody>
+      <tr><td>Streams, events, graphs, async allocation</td><td>Yes</td><td>Yes; API/version constraints still apply</td></tr>
+      <tr><td>PDL / launch-completion events</td><td>Where feature survey reports support</td><td>Check the feature survey; never infer by CC number</td></tr>
+      <tr><td>Clusters, DSMEM, TMA, CLC</td><td>Target-specific; central to this guide</td><td>Check each facility independently</td></tr>
+      <tr><td>TMEM / <code>tcgen05</code></td><td>Architecture-specific <code>sm_100a</code> / <code>sm_103a</code> (B300 Ultra, CC 10.3) forms; family targets <code>sm_100f</code>/<code>sm_103f</code> for forward-compatible subsets</td><td>Only exact forms documented for the target</td></tr>
+    </tbody>
+  </table>
+  <div class="gantt" aria-label="Animated timeline of SM lanes with work stealing">
+    <div class="lane"><b>SM 0</b><div class="track"><span class="bar b-host" style="left:2%;width:34%"></span><span class="bar b-dev" style="left:40%;width:22%"></span><span class="bar b-steal pulse" style="left:66%;width:18%"></span></div></div>
+    <div class="lane"><b>SM 1</b><div class="track"><span class="bar b-dev" style="left:2%;width:16%"></span><span class="bar b-sm" style="left:22%;width:30%"></span><span class="bar b-dev" style="left:56%;width:28%"></span></div></div>
+    <div class="lane"><b>SM 2</b><div class="track"><span class="bar b-sm" style="left:2%;width:26%"></span><span class="bar b-steal pulse" style="left:32%;width:20%"></span><span class="bar b-host" style="left:56%;width:34%"></span></div></div>
+    <div class="lane"><b>SM 3</b><div class="track"><span class="bar b-host" style="left:2%;width:20%"></span><span class="bar b-dev" style="left:26%;width:40%"></span><span class="bar b-sm" style="left:70%;width:20%"></span></div></div>
+    <div class="gantt-cap">code blocks default to python-ish pseudocode (API intent, not a real library) — the CUDA C++ tab has the real thing · coral bars = work stolen via cluster launch control · the goal of everything on this page is a timeline with no gaps</div>
+  </div>
+</header>
+<!-- ============ HOST LAYER ============ -->
+<section class="layer" id="host">
+  <div class="layerhead"><span class="tag t-host">Layer 1</span><h2>Host &amp; launch scheduling</h2></div>
+  <p class="layersub">Deciding when work enters the GPU, and shaving the CPU→GPU round trips off the critical path.</p>
+  <div class="layerrel"><span class="regime">≈ µs regime</span><span><b>Top of the stack: decisions about whole kernels.</b> Everything here fights the microsecond world of the <a href="#latencies">latency ladder</a> — launch machinery, host round trips, kernel-boundary gaps. Every layer below refines the assignments made here, inside the box this layer freezes at launch time (grid, block, cluster dims, smem carve-out). Its central seam is the <b>kernel boundary</b>: when a boundary costs too much, layer 1 <em>softens</em> it (graphs pack it, PDL overlaps across it) — the alternative, dissolving it entirely, lives one layer down.</span></div>
+
+  <article class="tech" id="streams">
+    <h3>Streams &amp; events</h3>
+    <div class="badges"><span class="badge">all archs</span><span class="badge">runtime API</span><span class="badge">the substrate</span></div>
+    <p>A stream is an in-order command queue; work in different streams may overlap. Events express dependencies between points in stream command sequences: a waiter cannot pass until everything preceding the event record has completed. Use nonblocking streams deliberately: the legacy NULL stream can introduce implicit synchronization, while per-thread default-stream mode changes that behavior. Transfer overlap and directionality are device-specific; query <code>asyncEngineCount</code> and verify the actual timeline in Nsight Systems.</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>s1, s2 = Stream(non_blocking=True), Stream(non_blocking=True)
+
+launch(kernel_a, stream=s1)                   <span class="cm"># these two can</span>
+copy_async(dst, src, to="device", stream=s2)  <span class="cm"># run concurrently</span>
+
+ev = Event(timing=False)                      <span class="cm"># cheaper than timed</span>
+ev.record(stream=s1)
+s2.wait(ev)                                   <span class="cm"># cross-stream dependency</span>
+launch(kernel_b, stream=s2)                   <span class="cm"># runs after ALL of kernel_a</span></code></pre><pre class="codepane pane-cu" hidden><code>cudaStream_t s1, s2;
+cudaStreamCreateWithFlags(&amp;s1, cudaStreamNonBlocking);
+cudaStreamCreateWithFlags(&amp;s2, cudaStreamNonBlocking);
+
+<span class="fn">kernelA</span>&lt;&lt;&lt;grid, block, 0, s1&gt;&gt;&gt;(...);                      <span class="cm">// these two can</span>
+cudaMemcpyAsync(dst, src, n, cudaMemcpyHostToDevice, s2);  <span class="cm">// run concurrently</span>
+
+cudaEvent_t ev;
+cudaEventCreateWithFlags(&amp;ev, cudaEventDisableTiming);     <span class="cm">// cheaper than timed</span>
+cudaEventRecord(ev, s1);
+cudaStreamWaitEvent(s2, ev, 0);                            <span class="cm">// cross-stream dep</span>
+<span class="fn">kernelB</span>&lt;&lt;&lt;grid, block, 0, s2&gt;&gt;&gt;(...);                      <span class="cm">// waits on ALL of kernelA</span></code></pre></div>
+    <div class="usebox">
+      <div class="yes"><h4>Use when</h4><ul><li>Independent kernels or copies serialize in the default stream</li><li>Overlapping transfers with compute (use pinned host memory)</li><li>As the substrate every other technique builds on</li></ul></div>
+      <div class="no"><h4>Limits</h4><ul><li>Dependencies are whole-kernel: B's first block waits for A's last</li><li>Each launch costs ~2–10&nbsp;µs of CPU time</li><li>Concurrency is opportunistic — a big kernel fills all SMs anyway</li></ul></div>
+    </div>
+  </article>
+
+  <article class="tech" id="priorities">
+    <h3>Stream priorities</h3>
+    <div class="badges"><span class="badge">all archs</span><span class="badge">runtime API</span></div>
+    <p>A hint to the hardware scheduler about which stream's pending blocks to dispatch first as SMs free up. Lower numbers are higher priority. The classic use: keep NCCL/communication kernels from starving behind a wave of GEMM blocks.</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>lo, hi = device.stream_priority_range()      <span class="cm"># hi is numerically smaller</span>
+comm    = Stream(non_blocking=True, priority=hi)
+compute = Stream(non_blocking=True, priority=lo)
+<span class="cm"># per-launch override also exists via launch attributes</span></code></pre><pre class="codepane pane-cu" hidden><code>int lo, hi;
+cudaDeviceGetStreamPriorityRange(&amp;lo, &amp;hi);   <span class="cm">// hi is numerically smaller</span>
+cudaStream_t comm, compute;
+cudaStreamCreateWithPriority(&amp;comm,    cudaStreamNonBlocking, hi);
+cudaStreamCreateWithPriority(&amp;compute, cudaStreamNonBlocking, lo);
+<span class="cm">// per-launch override also exists: cudaLaunchAttributePriority</span></code></pre></div>
+    <div class="usebox">
+      <div class="yes"><h4>Use when</h4><ul><li>Latency-critical kernels (comm, decode attention) contend with bulk compute</li><li>Cheap to try — one line at stream creation</li></ul></div>
+      <div class="no"><h4>Limits</h4><ul><li>No preemption of already-running blocks — only dispatch order</li><li>For hard guarantees, reserve SMs with green contexts instead</li></ul></div>
+    </div>
+  </article>
+
+  <article class="tech" id="mallocasync">
+    <h3>Stream-ordered memory allocation</h3>
+    <div class="badges"><span class="badge">all archs</span><span class="badge">CUDA 11.2+</span></div>
+    <p>Not scheduling of compute, but scheduling of allocation: <code>cudaMallocAsync</code>/<code>cudaFreeAsync</code> enqueue alloc/free <em>into a stream</em> instead of synchronizing the device the way <code>cudaMalloc</code> can. Removes a classic source of hidden serialization between otherwise-overlapping streams, and memory pools let freed blocks be reused without OS round trips.</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>p = malloc_async(nbytes, stream=s)            <span class="cm"># ordered within stream s</span>
+launch(kernel, args=[p], stream=s)
+free_async(p, stream=s)                       <span class="cm"># safe: ordered after the kernel</span>
+
+pool = device.default_mempool()
+pool.release_threshold = UNLIMITED            <span class="cm"># keep freed memory cached</span></code></pre><pre class="codepane pane-cu" hidden><code>void* p;
+cudaMallocAsync(&amp;p, bytes, s);      <span class="cm">// ordered within stream s</span>
+<span class="fn">kernel</span>&lt;&lt;&lt;g, b, 0, s&gt;&gt;&gt;(p);
+cudaFreeAsync(p, s);                <span class="cm">// safe: ordered after the kernel</span>
+
+cudaMemPool_t pool;                 <span class="cm">// keep freed memory cached in the pool</span>
+cudaDeviceGetDefaultMemPool(&amp;pool, dev);
+uint64_t huge = UINT64_MAX;
+cudaMemPoolSetAttribute(pool, cudaMemPoolAttrReleaseThreshold, &amp;huge);</code></pre></div>
+    <div class="usebox">
+      <div class="yes"><h4>Use when</h4><ul><li>Allocation sits inside a hot loop or between pipelined kernels</li><li>Building graphs (graph memory nodes use the same machinery)</li></ul></div>
+      <div class="no"><h4>Limits</h4><ul><li>Pointers are stream-ordered — using them in another stream needs an event dep</li></ul></div>
+    </div>
+  </article>
+
+  <article class="tech" id="graphs">
+    <h3>CUDA graphs</h3>
+    <div class="badges"><span class="badge">all archs</span><span class="badge">runtime API</span><span class="badge">launch-bound workloads</span></div>
+    <p>Capture a whole DAG of kernels, copies, allocations and host callbacks once; instantiate; replay with a single CPU call. The driver pre-resolves dependencies and packs dispatch, collapsing per-kernel launch overhead (~µs each) into ~one. vLLM and TensorRT-LLM use graphs by default for LLM decode.</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>with s.capture() as g:                        <span class="cm"># record a whole decode step</span>
+    launch(qkv,  stream=s)
+    launch(attn, stream=s)
+    launch(mlp,  stream=s)
+exec_graph = g.instantiate()
+
+for step in range(N):
+    exec_graph.launch(stream=s)               <span class="cm"># one CPU call replays everything</span>
+
+exec_graph.update_node_params(node, new_params)  <span class="cm"># new ptrs, no re-instantiate</span></code></pre><pre class="codepane pane-cu" hidden><code>cudaGraph_t g; cudaGraphExec_t ge;
+cudaStreamBeginCapture(s, cudaStreamCaptureModeGlobal);
+<span class="fn">qkv</span>&lt;&lt;&lt;ga, b, 0, s&gt;&gt;&gt;(...);
+<span class="fn">attn</span>&lt;&lt;&lt;gb, b, 0, s&gt;&gt;&gt;(...);        <span class="cm">// an entire decode step</span>
+<span class="fn">mlp</span>&lt;&lt;&lt;gc, b, 0, s&gt;&gt;&gt;(...);
+cudaStreamEndCapture(s, &amp;g);
+cudaGraphInstantiate(&amp;ge, g, 0);
+
+for (int step = 0; step &lt; N; ++step)
+    cudaGraphLaunch(ge, s);          <span class="cm">// one CPU call replays everything</span>
+
+<span class="cm">// update params without re-instantiating (new seq len, new ptrs):</span>
+cudaGraphExecKernelNodeSetParams(ge, node, &amp;newParams);</code></pre></div>
+    <div class="usebox">
+      <div class="yes"><h4>Use when</h4><ul><li>Many small kernels with a repeating, mostly-static structure</li><li>CPU launch time shows up as gaps between kernels in the profiler</li><li>You want PDL/priority attributes baked into a replayable unit</li></ul></div>
+      <div class="no"><h4>Limits</h4><ul><li>Topology changes force re-instantiation (params can be updated in place)</li><li>Capture forbids illegal ops (sync, default-stream use) inside the region</li></ul></div>
+    </div>
+  </article>
+
+  <article class="tech" id="devgraphs">
+    <h3>Device graph launch</h3>
+    <div class="badges"><span class="badge">CUDA 12.0+</span><span class="badge">check target support in the feature survey</span></div>
+    <p>A kernel launches a pre-instantiated graph from the GPU — device-side scheduling of <em>structured</em> work, without a CPU round trip. Think of it as dynamic parallelism for whole pipelines: a dispatcher kernel inspects data and fires the appropriate graph.</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>exec_graph = g.instantiate(device_launchable=True)   <span class="cm"># host, ahead of time</span>
+exec_graph.upload(stream=s)
+
+@kernel
+def dispatcher(work: GraphExec):
+    if thread.is_leader and work_available():
+        work.launch(stream=FIRE_AND_FORGET)   <span class="cm"># GPU decides, no CPU round trip</span></code></pre><pre class="codepane pane-cu" hidden><code><span class="cm">// host: instantiate for device launch, upload</span>
+cudaGraphInstantiate(&amp;ge, g, cudaGraphInstantiateFlagDeviceLaunch);
+cudaGraphUpload(ge, s);
+
+__global__ void <span class="fn">dispatcher</span>(cudaGraphExec_t work) {
+    if (threadIdx.x == 0 &amp;&amp; work_available())
+        cudaGraphLaunch(work, cudaStreamGraphFireAndForget);
+}</code></pre></div>
+    <div class="usebox">
+      <div class="yes"><h4>Use when</h4><ul><li>The decision of <em>which</em> pipeline to run lives in GPU data</li><li>Self-scheduling pipelines: a graph's last node relaunches it (tail launch)</li></ul></div>
+      <div class="no"><h4>Limits</h4><ul><li>Graphs must be instantiated/uploaded ahead of time; restricted node types</li></ul></div>
+    </div>
+  </article>
+
+  <article class="tech" id="condnodes">
+    <h3>Conditional graph nodes</h3>
+    <div class="badges"><span class="badge">CUDA 12.3+ (IF/WHILE), 12.8+ (ELSE/SWITCH)</span></div>
+    <p>IF / IF-ELSE / WHILE / SWITCH nodes evaluated <em>on-device</em>: a kernel sets a condition handle, and the graph itself decides whether (or how many times) to run an embedded subgraph. This moves loop and branch control flow off the CPU entirely — e.g. "keep iterating the solver until converged" as one graph launch.</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>handle = graph.conditional_handle(default=1)
+
+@kernel
+def check(residual, handle):
+    set_conditional(handle, residual[0] &gt; TOL)   <span class="cm"># 1 = run body again</span>
+
+body = graph.add_while_node(handle)              <span class="cm"># build the loop body in `body`</span></code></pre><pre class="codepane pane-cu" hidden><code>cudaGraphConditionalHandle h;
+cudaGraphConditionalHandleCreate(&amp;h, graph, 1,
+                                 cudaGraphCondAssignDefault);
+
+<span class="cm">// inside a kernel that runs before the conditional node:</span>
+__global__ void <span class="fn">check</span>(float* residual, cudaGraphConditionalHandle h) {
+    cudaGraphSetConditional(h, *residual &gt; TOL);  <span class="cm">// 1 = run body again</span>
+}
+<span class="cm">// add node: params.conditional.type = cudaGraphCondTypeWhile;</span>
+<span class="cm">// then build the loop body inside params.conditional.phGraph_out[0]</span></code></pre></div>
+    <div class="usebox">
+      <div class="yes"><h4>Use when</h4><ul><li>Iterate-until-converged loops currently synchronized on the CPU</li><li>Data-dependent branches between captured pipelines</li></ul></div>
+      <div class="no"><h4>Limits</h4><ul><li>Graph construction is manual API work, not stream capture (capture support is partial)</li></ul></div>
+    </div>
+  </article>
+
+  <article class="tech" id="pdl">
+    <h3>Programmatic dependent launch (PDL)</h3>
+    <div class="badges"><span class="badge hop">CC 9.0+ for overlap</span><span class="badge">CUDA 12-era API (11.8 preview)</span><span class="badge">composes with graphs</span><span class="badge">PTX griddepcontrol.wait / .launch_dependents</span></div>
+    <p>Normally kernel N+1 in a stream waits for <em>all</em> of kernel N. PDL splits what stream ordering normally fuses into <b>two separate dependencies</b>: <em>launch readiness</em> (when may B's blocks start? — the trigger, a scheduling signal that guarantees nothing about memory visibility) and <em>data readiness</em> (when may B consume A's output? — the grid sync, after which A's writes are visible). The secondary launches early, runs its prologue (weight loads, TMA descriptor setup) concurrently with the primary's tail, and blocks only at the data dependency it declares by hand. Standard trick in TensorRT-LLM and fast GEMM chains for erasing the inter-kernel bubble.</p>
+    <div class="diagram" aria-label="Animated PDL overlap timeline">
+      <div class="dl"><b>K1</b><div class="dtrack"><span class="dbar b-host" style="left:0;width:52%"></span></div></div>
+      <div class="dl"><b>K2</b><div class="dtrack"><span class="dbar b-sm grow" style="left:34%;width:16%"></span><span class="dbar b-host appear" style="left:52%;width:40%"></span></div></div>
+      <div class="dl"><b>K3</b><div class="dtrack"><span class="dbar b-sm appear" style="left:74%;width:12%"></span><span class="dbar b-host appear2" style="left:88%;width:12%"></span></div></div>
+      <div class="dcap">amber = independent prologue overlapping the predecessor's tail; blue = post-sync main work</div>
+    </div>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>@kernel
+def primary(out):
+    produce(out)
+    trigger_launch_completion()       <span class="cm"># optional: release successor early</span>
+    finish_epilogue()                 <span class="cm"># work the successor doesn't need</span>
+
+@kernel
+def secondary(inp):
+    prefetch_weights()                <span class="cm"># runs under primary's tail</span>
+    grid_dependency_sync()            <span class="cm"># block until primary's writes visible</span>
+    consume(inp)
+
+launch(secondary, stream=s, allow_early_start=True)  <span class="cm"># the opt-in promise</span></code></pre><pre class="codepane pane-cu" hidden><code>__global__ void <span class="fn">primary</span>(float* out) {
+    <span class="cm">// ... produce out ...</span>
+    cudaTriggerProgrammaticLaunchCompletion();  <span class="cm">// optional: release successor early</span>
+    <span class="cm">// ... epilogue the successor doesn't need ...</span>
+}
+__global__ void <span class="fn">secondary</span>(const float* in) {
+    load_weights_to_smem();           <span class="cm">// runs concurrently with primary's tail</span>
+    cudaGridDependencySynchronize();  <span class="cm">// block until primary's writes visible</span>
+    consume(in);
+}
+
+cudaLaunchAttribute a{};
+a.id = cudaLaunchAttributeProgrammaticStreamSerialization;
+a.val.programmaticStreamSerializationAllowed = 1;
+cudaLaunchConfig_t cfg{grid, block, 0, s, &amp;a, 1};
+cudaLaunchKernelEx(&amp;cfg, <span class="fn">secondary</span>, d_in);</code></pre></div>
+    <div class="usebox">
+      <div class="yes"><h4>Use when</h4><ul><li>Chains of short dependent kernels where launch + prologue ≈ runtime</li><li>Inference pipelines; also as PDL edges inside captured graphs</li></ul></div>
+      <div class="no"><h4>Limits</h4><ul><li>Correctness is on you: touch dependent data before the sync → race</li><li>Overlap is opportunistic — needs free SMs during the primary's tail</li></ul></div>
+    </div>
+    <div class="note"><b>Granularity fine print</b> — the dependency stays <em>grid-shaped</em>: all of A, to each CTA of B. The trigger is collective — B's early launch is gated on <em>every</em> CTA of A executing <code>cudaTriggerProgrammaticLaunchCompletion</code> (or exiting), so put it on a path all CTAs take, and note that A's slowest CTA sets the trigger time. B's blocks each wait independently at <code>cudaGridDependencySynchronize</code> with no tile-to-tile pairing — PDL cannot express "B's tile 7 waits only on A's tile 7"; that fine-grained shape belongs to <a href="#megakernel">megakernel</a> counters and MPK events. Overlap materializes at CTA granularity along A's drain curve (a tail-wave-heavy predecessor is the ideal PDL setup), and if B launches as clusters, whole clusters' worth of co-located SMs must free before B can place — larger clusters make the early launch lumpier. PDL×cluster support details have shifted across CUDA versions; check your toolkit.</div>
+    <div class="note"><b>When it pays — the bound and the ladder</b> — the win is capped at roughly <code>min(primary's trailing phase, secondary's independent prefix)</code>, and only materializes given free SMs and <em>complementary</em> resources (a memory-bound prefetch prologue under a compute-bound tail overlaps; two bandwidth-hogs fight). That's why early start isn't a default: the attribute is a <b>promise</b> — "everything before my explicit wait is independent of the predecessor" — that trades away the stream's strongest guarantee, and blanket-enabling it risks races for kernels not written to the contract while buying nothing for kernels with no useful prefix. (If the primary never triggers explicitly, the implicit end-of-kernel trigger still erases the launch-gap — you lose only the deeper tail overlap.) The decision ladder: <b>fuse</b> if it cleanly kills the global-memory round trip → <b>separate streams</b> if truly independent → <b>plain ordering</b> if fully dependent with no prefix → <b>PDL</b> when dependent overall but the successor owns a valuable independent prefix — the canonical case being chained GEMMs, where layer N+1's weights depend on nothing layer N produced, so their prefetch hides under N's tail at every layer of every step.</div>
+  </article>
+
+  <article class="tech" id="lce">
+    <h3>Launch completion events</h3>
+    <div class="badges"><span class="badge hop">target-dependent</span><span class="badge">extended launch API</span></div>
+    <p>An event that fires at the documented launch-completion point—after all CTAs have been launched, not after the kernel has finished. Another stream can wait for launch ordering without waiting for output readiness. This does not mean all CTAs are simultaneously resident and is not a data-completion dependency.</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>ev = Event()
+launch(big_kernel, stream=s1, completion_event=ev)  <span class="cm"># fires when all CTAs LAUNCHED</span>
+s2.wait(ev)          <span class="cm"># s2 dispatches only after big_kernel occupies the GPU</span>
+                     <span class="cm"># (launch ordering — not completion, not data readiness)</span></code></pre><pre class="codepane pane-cu" hidden><code>cudaEvent_t ev; cudaEventCreateWithFlags(&amp;ev, cudaEventDisableTiming);
+cudaLaunchAttribute a{};
+a.id = cudaLaunchAttributeLaunchCompletionEvent;
+a.val.launchCompletionEvent.event = ev;
+a.val.launchCompletionEvent.flags = 0;
+cudaLaunchConfig_t cfg{grid, block, 0, s1, &amp;a, 1};
+cudaLaunchKernelEx(&amp;cfg, <span class="fn">big_kernel</span>, ...);
+cudaStreamWaitEvent(s2, ev, 0);   <span class="cm">// launch ordering only; outputs may be unfinished</span></code></pre></div>
+  </article>
+
+  <article class="tech" id="streammemops">
+    <h3>Stream memory operations &amp; external semaphores</h3>
+    <div class="badges"><span class="badge">driver API</span><span class="badge">interop / device queues</span></div>
+    <p>Streams can wait on or write device-visible memory words without an event or polling kernel. External semaphores order CUDA against Vulkan, Direct3D, NvSciSync, NIC, or other external timelines. Graphs also have event-record/wait and external-semaphore nodes.</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>s.wait_value(doorbell, READY, cmp="eq")   <span class="cm"># stream stalls until *doorbell == READY</span>
+launch(kernel, stream=s)
+s.write_value(done, 1)                    <span class="cm"># stream publishes progress</span>
+
+sem = import_external_semaphore(handle)   <span class="cm"># interop: Vulkan / NIC / other process</span>
+s.wait(sem);  launch(kernel, stream=s);  s.signal(sem)</code></pre><pre class="codepane pane-cu" hidden><code><span class="cm">// driver API: queue work only after *doorbell reaches READY</span>
+cuStreamWaitValue32(s, d_doorbell, READY, CU_STREAM_WAIT_VALUE_EQ);
+cuLaunchKernel(..., s, ...);
+cuStreamWriteValue32(s, d_done, 1, CU_STREAM_WRITE_VALUE_DEFAULT);
+
+<span class="cm">// runtime interop after importing cudaExternalSemaphore_t sem:</span>
+cudaWaitExternalSemaphoresAsync(&amp;sem, &amp;waitParams, 1, s);
+<span class="fn">kernel</span>&lt;&lt;&lt;g,b,0,s&gt;&gt;&gt;(...);
+cudaSignalExternalSemaphoresAsync(&amp;sem, &amp;signalParams, 1, s);</code></pre></div>
+    <div class="usebox"><div class="yes"><h4>Use when</h4><ul><li>Device queues, doorbells, graphics/compute interop, or external producers</li><li>A memory value is the natural dependency rather than a CUDA event</li></ul></div><div class="no"><h4>Limits</h4><ul><li>Capability, memory visibility, and flags are platform-specific</li><li>Use batch memory operations when many waits/writes must be submitted together</li></ul></div></div>
+  </article>
+</section>
+<!-- ============ DEVICE LAYER ============ -->
+<section class="layer" id="devlayer">
+  <div class="layerhead"><span class="tag t-dev">Layer 2</span><h2>Device-side grid scheduling</h2></div>
+  <p class="layersub">Kernels that schedule themselves: deciding which block does which work, after launch.</p>
+  <div class="layerrel"><span class="regime">µs → 100s of ns</span><span><b>One refinement down: from "which kernel" to "which block gets which tile."</b> Layer 1 decided a grid runs; this layer decides how the launched work distributes across SMs — and it's the other side of layer 1's kernel-boundary seam: where graphs and PDL soften the boundary from above, persistence, CLC, and megakernels <em>dissolve</em> it from below, turning µs-scale launch costs into ns-scale dispatch inside a resident kernel. The launch geometry frozen by layer 1 is binding here: cluster dims set CLC's steal granularity, and one-wave sizing is what makes persistent designs sound.</span></div>
+
+  <article class="tech" id="persistent">
+    <h3>Persistent kernels &amp; software tile schedulers</h3>
+    <div class="badges"><span class="badge">all archs</span><span class="badge">foundation of stream-K</span></div>
+    <p>Launch ~one block per SM and have each pull work items from a global atomic counter until the queue drains. Software dynamic scheduling: blocks keep weights/state resident across items, and slow tiles no longer gate a whole wave. Stream-K GEMM generalizes this by also splitting the K dimension so partial tiles fill the tail wave.</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>next_tile = device_counter(0)
+
+@kernel
+def persistent_kernel(num_tiles):
+    while True:
+        tile = next_tile.fetch_add(1)     <span class="cm"># leader claims, broadcast to block</span>
+        if tile &gt;= num_tiles: return
+        process(tile)
+
+launch(persistent_kernel, grid=num_sms * blocks_per_sm)  <span class="cm"># exactly one wave</span></code></pre><pre class="codepane pane-cu" hidden><code>__device__ int g_next;
+
+__global__ void <span class="fn">persistent_kernel</span>(int num_tiles, ...) {
+    __shared__ int tile;
+    while (true) {
+        if (threadIdx.x == 0) tile = atomicAdd(&amp;g_next, 1);
+        __syncthreads();
+        if (tile &gt;= num_tiles) return;
+        process_tile(tile, ...);
+        __syncthreads();
+    }
+}
+<span class="cm">// launch exactly one wave:</span>
+cudaDeviceGetAttribute(&amp;num_sms, cudaDevAttrMultiProcessorCount, 0);
+<span class="fn">persistent_kernel</span>&lt;&lt;&lt;num_sms * blocks_per_sm, 256&gt;&gt;&gt;(num_tiles, ...);</code></pre></div>
+    <div class="usebox">
+      <div class="yes"><h4>Use when</h4><ul><li>Uneven per-tile cost: variable seq lengths, sparsity, stream-K GEMM</li><li>State (weights in smem/regs) should survive across work items</li><li>Pre-Blackwell hardware — this is the portable version of CLC</li></ul></div>
+      <div class="no"><h4>Limits</h4><ul><li>Atomic counter contention at high steal rates (back off spin loops with <code>nanosleep</code>)</li><li>You size the grid — fights other concurrent kernels for SMs</li><li>Blocks squat on SMs even when idle; CLC can improve coexistence and remove the global queue, but not create finer-grained work</li></ul></div>
+    </div>
+  </article>
+
+  <article class="tech" id="raster">
+    <h3>Threadblock rasterization &amp; tile swizzle</h3>
+    <div class="badges"><span class="badge">all archs</span><span class="badge">the zeroth scheduling decision</span><span class="badge">CUTLASS RasterOrder · Triton GROUP_M</span></div>
+    <p>Before any dynamic scheduling, there's a static choice: the <em>order</em> in which tile IDs map to work. Whatever set of tiles is resident at the same moment determines L2 reuse — naive row-major order marches along one row of C, streaming all of B through L2 with little reuse; a grouped/serpentine order keeps concurrent CTAs inside a GROUP×wave window so they share both A rows and B columns. This composes with everything: static grids, persistent loops, stream-K, and CLC all consume a "next tile" that some rasterization function decodes.</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>def swizzle_tile(tid, grid_m, grid_n):
+    width   = GROUP_M * grid_n            <span class="cm"># tiles per group</span>
+    group   = tid // width
+    first_m = group * GROUP_M
+    size_m  = min(grid_m - first_m, GROUP_M)
+    m = first_m + (tid % size_m)          <span class="cm"># snake within the group</span>
+    n = (tid % width) // size_m
+    return m, n              <span class="cm"># concurrent tiles cluster in M =&gt; L2 hits</span></code></pre><pre class="codepane pane-cu" hidden><code><span class="cm">// grouped (Triton-style) rasterization: linear tile id -&gt; (m, n)</span>
+__device__ int2 <span class="fn">swizzle_tile</span>(int tid, int grid_m, int grid_n) {
+    int width   = GROUP_M * grid_n;          <span class="cm">// tiles per group</span>
+    int group   = tid / width;
+    int first_m = group * GROUP_M;
+    int size_m  = min(grid_m - first_m, GROUP_M);
+    int m = first_m + (tid % size_m);        <span class="cm">// snake within the group</span>
+    int n = (tid % width) / size_m;
+    return {m, n};                            <span class="cm">// concurrent tiles cluster in M ⇒ L2 hits</span>
+}</code></pre></div>
+    <div class="usebox">
+      <div class="yes"><h4>Use when</h4><ul><li>Always — it's nearly free and often worth several percent on bandwidth-bound shapes</li><li>Tune GROUP so a wave's operand footprint fits L2</li></ul></div>
+      <div class="no"><h4>Limits</h4><ul><li>Static heuristic: the best order depends on shape and L2 size — CUTLASS exposes it as a tunable (RasterOrder / swizzle) for a reason</li></ul></div>
+    </div>
+  </article>
+
+  <article class="tech" id="clc">
+    <h3>Cluster launch control (CLC)</h3>
+    <div class="badges"><span class="badge bw">Blackwell target-specific</span><span class="badge">PTX clusterlaunchcontrol.*</span></div>
+    <p>Hardware-assisted work stealing. Launch a natural grid; a running cluster can request cancellation of a not-yet-launched cluster and, after a successful response, process the canceled cluster's ID. This dynamically balances <b>unequal whole-tile runtimes</b> and avoids a global atomic queue. It does not subdivide an indivisible tile and therefore does not, by itself, eliminate the final underfilled wave of a uniform GEMM.</p>
+    <div class="diagram" aria-label="Animated CLC steal">
+      <div class="dl"><b>SM 0</b><div class="dtrack"><span class="dbar b-dev" style="left:0;width:56%"></span><span class="dbar b-steal appear" style="left:58%;width:24%"></span></div></div>
+      <div class="dl"><b>SM 1</b><div class="dtrack"><span class="dbar b-dev" style="left:0;width:22%"></span><span class="dbar b-steal grow" style="left:24%;width:58%"></span></div></div>
+      <div class="dl"><b>SM 2</b><div class="dtrack"><span class="dbar b-dev" style="left:0;width:34%"></span><span class="dbar b-steal appear" style="left:36%;width:22%"></span><span class="dbar b-steal appear2" style="left:60%;width:22%"></span></div></div>
+      <div class="dl"><b>queue</b><div class="dtrack hatch"></div></div>
+      <div class="dcap">green = statically launched first wave; coral = tiles stolen from the pending grid (hatched)</div>
+    </div>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>@kernel
+def clc_kernel(...):
+    response = shared_bytes(16)            <span class="cm"># steal result lands here, async</span>
+    bar = shared_mbarrier(expect_bytes=16)
+
+    tile = block_idx()                     <span class="cm"># first tile comes free</span>
+    while True:
+        process(tile)
+
+        <span class="cm"># ONE elected thread in CTA 0 of the CLUSTER issues the steal;</span>
+        <span class="cm"># multicast delivers the response to every CTA's smem</span>
+        if cluster.rank == 0 and thread.elected:
+            try_cancel_async(response, bar)
+        bar.wait()                         <span class="cm"># + async-proxy fence before reuse</span>
+
+        if not response.cancelled:         <span class="cm"># nothing pending -&gt; exit</span>
+            return
+        tile = response.stolen_block_idx   <span class="cm"># claim the cancelled block's work</span></code></pre><pre class="codepane pane-cu" hidden><code><span class="cm">// Protocol pseudocode—not drop-in CUDA. Wrapper names/signatures move with toolkits.
+// A real implementation must initialize and phase the mbarrier, set expected bytes,
+// wait for the response, apply async-proxy ordering, and coordinate the whole cluster.</span>
+__global__ void <span class="fn">clc_kernel</span>(...) {
+    __shared__ alignas(16) __int128 clc_response;  <span class="cm">// response storage</span>
+    __shared__ uint64_t mbar;                      <span class="cm">// mbarrier, expect-tx = 16</span>
+    <span class="cm">// ... init mbar ...</span>
+
+    uint3 tile = {blockIdx.x, blockIdx.y, blockIdx.z};  <span class="cm">// first tile is free</span>
+    while (true) {
+        process_tile(tile, ...);
+
+        <span class="cm">// exactly ONE elected thread in CTA rank 0 of the CLUSTER issues the</span>
+        <span class="cm">// steal (multicast form distributes the response to every CTA's smem);</span>
+        <span class="cm">// a second issuing CTA would cancel a second cluster</span>
+        if (cluster.block_rank() == 0 &amp;&amp; elect_one())
+            __clusterlaunchcontrol_try_cancel_async(&amp;clc_response, &amp;mbar);
+        <span class="cm">// ... mbarrier wait; fence async proxy before reuse ...</span>
+
+        if (!__clusterlaunchcontrol_query_cancel_is_canceled(&amp;clc_response))
+            return;  <span class="cm">// decline: nothing pending — exit</span>
+        tile.x = __clusterlaunchcontrol_query_cancel_get_first_ctaid_x(&amp;clc_response);
+        tile.y = __clusterlaunchcontrol_query_cancel_get_first_ctaid_y(&amp;clc_response);
+        tile.z = __clusterlaunchcontrol_query_cancel_get_first_ctaid_z(&amp;clc_response);
+    }
+}</code></pre></div>
+    <p>The op behaves like TMA: one thread issues it, the response completes via mbarrier, and it can multicast to all CTAs of a cluster. Production kernels pipeline it — CUTLASS's <code>PipelineCLCFetchAsync</code> runs a dedicated scheduler warp producing CLC results into a depth-3 pipeline consumed by the MMA, mainloop-load, epilogue-load, and epilogue warps (the scheduler is also its own consumer: it needs the success bit to know when to exit the persistent loop), so steal latency hides under the mainloop. Unlike a fixed persistent grid, clusters can also exit early and let fresh clusters launch later, so CLC kernels coexist gracefully with concurrent kernels and preemption.</p>
+    <div class="usebox">
+      <div class="yes"><h4>Use when</h4><ul><li>Persistent-style kernels on Blackwell: GEMM, attention, uneven tiles</li><li>Your kernel shares the GPU with other work</li><li>Via CUTLASS / CuTe DSL tile schedulers or Triton TLX in practice</li></ul></div>
+      <div class="no"><h4>Limits</h4><ul><li>Blackwell-only; raw intrinsics + mbarrier + proxy fences are fiddly</li><li>One try_cancel per cluster — extra issuing threads cancel extra clusters</li></ul></div>
+    </div>
+  </article>
+
+  <article class="tech" id="megakernel">
+    <h3>Megakernels</h3>
+    <div class="badges"><span class="badge">design pattern</span><span class="badge">ThunderKittens (Hazy) · Mirage MPK · FlashFormer · Ada-MK</span></div>
+    <p>Persistence taken to the limit: fuse the entire model — sometimes across multiple GPUs — into one launch, so operator boundaries stop being kernel boundaries. The motivation is measured, not aesthetic: kernel launches cost microseconds each even under graphs (Hazy measured a no-op kernel at ~2.1&nbsp;µs standalone and still ~1.3&nbsp;µs inside a CUDA graph), and at decode batch&nbsp;1 the setup/teardown bubbles between hundreds of small kernels dominate. Two design schools exist, distinguished by <em>who schedules the tasks</em>:</p>
+
+    <p><b>School 1 — statically scheduled interpreter (Hazy Research / ThunderKittens).</b> A compiler/planner assigns each SM its own instruction queue ahead of time. Each instruction is a CTA-sized unit of work ("compute this matmul output tile") structured into explicit <em>load / compute / store</em> sections, and the on-GPU interpreter aggressively pipelines <em>across instruction boundaries</em> — starting the next instruction's weight loads (into paged shared memory) while the current one finishes, which is what eliminates the inter-op memory bubbles. Cross-SM dependencies are global-memory counters; the lineage runs ThunderMLA (fused attention with meta-instructions) → the Llama-1B low-latency megakernel (~78% of H100 memory bandwidth at batch&nbsp;1) → the 8-GPU Llama-70B kernels, where NVLink communication (via multicast "parallel global layouts") is itself pipelined: the multi-GPU residual add for tile N−1 overlaps compute of tile N, keeping tensor cores, HBM, and NVLink busy simultaneously.</p>
+
+    <p><b>School 2 — dynamic event-driven runtime (Mirage MPK).</b> A compiler lowers the tensor program into an <em>SM-level task graph</em> — dependencies tracked per-tile, not per-operator, with the Mirage superoptimizer generating each task's CUDA — and an in-kernel runtime executes it: SMs are statically partitioned into <b>workers</b> (one per SM, each with its own task queue) and <b>scheduler warps</b> (four per scheduler SM) that poll event queues and dispatch newly-enabled tasks. A task's completion triggers events; events enqueue dependent tasks — including communication tasks, so compute/comm overlap falls out of the graph. Reported gains: 1.2–6.7× latency reduction vs kernel-per-operator baselines, 1.0–1.7× vs SGLang/vLLM. The trade: dynamic dispatch and managed smem paging add branching overhead that hand-scheduled static queues avoid (the critique that motivates Ada-MK's search-based static planner), but the runtime adapts to variable work where a static plan can't.</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code><span class="cm"># School 1: static per-SM instruction stream (Hazy-style)</span>
+@kernel
+def megakernel(program, g):
+    for instr in program[my_sm]:           <span class="cm"># real ones pipeline:</span>
+        match instr.op:                    <span class="cm">#   load(pc+1) under compute(pc)</span>
+            case QKV:    run_qkv(instr)
+            case ATTN:   run_attn(instr)
+            case MLP:    run_mlp(instr)
+            case WAIT:   spin_until(g.counter[instr.a] &gt;= instr.b)
+            case SIGNAL: fence(); g.counter[instr.a] += 1
+
+<span class="cm"># School 2: event-driven (MPK-style)</span>
+<span class="cm"># worker SM:      while True: t = my_queue.pop(); run(t); trigger(t.event)</span>
+<span class="cm"># scheduler warp: while True: e = poll(); for t in e.deps: workers[rr].push(t)</span></code></pre><pre class="codepane pane-cu" hidden><code><span class="cm">// School 1: static per-SM instruction stream (Hazy-style, simplified)</span>
+struct Instr { int op, arg0, arg1; };   <span class="cm">// "attn layer 3, tile 4", "wait counter 7"…</span>
+__global__ __launch_bounds__(NUM_THREADS, 1)
+void <span class="fn">megakernel</span>(const Instr* prog, int n, Globals g) {
+    for (int pc = 0; pc &lt; n; ++pc) {     <span class="cm">// interpreter; real ones pipeline</span>
+        Instr in = prog[blockIdx.x * n + pc];   <span class="cm">//   load(pc+1) under compute(pc)</span>
+        switch (in.op) {
+            case OP_QKV:    run_qkv(in, g);    break;
+            case OP_ATTN:   run_attn(in, g);   break;
+            case OP_MLP:    run_mlp(in, g);    break;
+            case OP_WAIT:   while (atomicAdd(&amp;g.cnt[in.arg0], 0) &lt; in.arg1); break;
+            case OP_SIGNAL: __threadfence(); atomicAdd(&amp;g.cnt[in.arg0], 1); break;
+        }
+    }
+}
+
+<span class="cm">// School 2: event-driven worker loop (MPK-style, simplified)</span>
+<span class="cm">// worker SM:    for(;;){ t = my_queue.pop(); run(t); trigger(t.event); }</span>
+<span class="cm">// scheduler warp: for(;;){ e = poll_events(); for (t : e.dependents) workers[rr++].push(t); }</span></code></pre></div>
+    <div class="usebox">
+      <div class="yes"><h4>Use when</h4><ul><li>Low-batch, latency-critical decode; launch gaps + weight re-fetch dominate even under graphs</li><li>Tile-granularity compute/comm overlap (tensor-parallel, MoE) — comm becomes just another pipelined instruction/task</li><li>Static school when shapes are known and latency is everything; dynamic school for variable work and less hand-engineering</li></ul></div>
+      <div class="no"><h4>Limits</h4><ul><li>Enormous engineering cost; register/smem pressure from fusing everything; research-grade codebases tied to specific architectures</li><li>You own all scheduling, synchronization, and forward progress — use ThunderKittens or MPK, don't hand-roll</li><li>Graphs get most of the launch-overhead win for a fraction of the effort — but not the bubbles between dependent ops, which need the interpreter/task pipelining</li></ul></div>
+    </div>
+  </article>
+
+  <article class="tech" id="coop">
+    <h3>Cooperative launch &amp; grid sync</h3>
+    <div class="badges"><span class="badge">all archs</span><span class="badge">cooperative groups</span></div>
+    <p>Guarantees all blocks are co-resident so a grid-wide barrier is legal — the supporting machinery for persistent/megakernel phases and single-kernel iterative algorithms.</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>@kernel
+def k(...):
+    phase1()
+    grid.sync()            <span class="cm"># every block arrives before any proceeds</span>
+    phase2()
+
+launch_cooperative(k, grid, block)   <span class="cm"># guarantees all blocks co-resident</span></code></pre><pre class="codepane pane-cu" hidden><code>#include &lt;cooperative_groups.h&gt;
+namespace cg = cooperative_groups;
+
+__global__ void <span class="fn">k</span>(...) {
+    cg::grid_group grid = cg::this_grid();
+    phase1(...);
+    grid.sync();          <span class="cm">// every block arrives before any proceeds</span>
+    phase2(...);
+}
+void* args[] = { &amp;p1, &amp;p2 };
+cudaLaunchCooperativeKernel((void*)<span class="fn">k</span>, grid, block, args);</code></pre></div>
+    <div class="note"><b>Note</b> — megakernel implementations often prefer fine-grained per-tile counters over <code>grid.sync()</code>: a global barrier stalls SMs that could already be running the next layer's independent tiles.</div>
+  </article>
+
+  <article class="tech" id="cdp">
+    <h3>Dynamic parallelism (CDP2)</h3>
+    <div class="badges"><span class="badge">all archs</span><span class="badge">CDP2: CUDA 12+ semantics</span><span class="badge">-rdc=true</span></div>
+    <p>Kernels launching kernels, entirely on-device, into fire-and-forget or tail-launch ordering. The fit is data-dependent recursive parallelism where the amount of work is unknowable on the host.</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>@kernel
+def parent(...):
+    if thread.is_leader and needs_refinement(block_idx()):
+        launch(child, grid=blocks(deg), stream=FIRE_AND_FORGET)
+        <span class="cm"># TAIL_LAUNCH instead: child runs after this whole grid completes</span></code></pre><pre class="codepane pane-cu" hidden><code>__global__ void <span class="fn">child</span>(int region);
+
+__global__ void <span class="fn">parent</span>(...) {
+    if (threadIdx.x == 0 &amp;&amp; needs_refinement(blockIdx.x))
+        <span class="fn">child</span>&lt;&lt;&lt;32, 128, 0, cudaStreamFireAndForget&gt;&gt;&gt;(blockIdx.x);
+    <span class="cm">// cudaStreamTailLaunch: runs after this whole grid completes</span>
+}</code></pre></div>
+    <div class="usebox">
+      <div class="yes"><h4>Use when</h4><ul><li>Adaptive refinement, tree traversal, recursive decomposition</li><li>Structured child work → prefer device <em>graph</em> launch instead</li></ul></div>
+      <div class="no"><h4>Limits</h4><ul><li>Per-launch overhead remains real; for load balancing, CLC/persistent wins</li></ul></div>
+    </div>
+  </article>
+
+  <article class="tech" id="clusters">
+    <h3>Thread block clusters &amp; preferred cluster dims</h3>
+    <div class="badges"><span class="badge hop">clusters: sm_90+</span><span class="badge bw">preferred dims: Blackwell</span></div>
+    <p>Clusters co-schedule a group of CTAs onto one GPC with distributed shared memory (DSMEM) between them — scheduling in the <em>spatial</em> dimension: controlling where blocks land relative to each other. Blackwell adds <b>preferred clusters</b>: request a big cluster shape with a fallback, and hardware launches whichever fits the moment.</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>@kernel(cluster=(2, 1, 1))                <span class="cm"># compile-time cluster shape</span>
+def k(...):
+    peer = cluster.peer(rank ^ 1).shared  <span class="cm"># read/write neighbor CTA's smem</span>
+    cluster.sync()
+
+<span class="cm"># Blackwell: prefer 4x1, fall back to 2x1. k_flex is compiled WITHOUT a</span>
+<span class="cm"># compile-time shape — the runtime attributes set required + preferred:</span>
+launch(k_flex, cluster=(2,1,1), preferred_cluster=(4,1,1), stream=s)</code></pre><pre class="codepane pane-cu" hidden><code>__global__ void __cluster_dims__(2, 1, 1) <span class="fn">k</span>(...) {
+    cg::cluster_group cluster = cg::this_cluster();
+    extern __shared__ float smem[];
+    float* peer = cluster.map_shared_rank(smem, cluster.block_rank() ^ 1);
+    <span class="cm">// read/write neighbor CTA's smem; cluster.sync() to order</span>
+}
+
+<span class="cm">// Blackwell: prefer 4x1, fall back to 2x1 when SMs are fragmented.</span>
+<span class="cm">// NOTE: k_flex is compiled WITHOUT __cluster_dims__ — a compile-time</span>
+<span class="cm">// cluster size cannot be overridden by the runtime attribute below.</span>
+cudaLaunchAttribute a[2]{};
+a[0].id = cudaLaunchAttributeClusterDimension;
+a[0].val.clusterDim = {2, 1, 1};                  <span class="cm">// required / fallback</span>
+a[1].id = cudaLaunchAttributePreferredClusterDimension;
+a[1].val.preferredClusterDim = {4, 1, 1};         <span class="cm">// used when available</span>
+cudaLaunchConfig_t cfg{grid, block, smem, s, a, 2};
+cudaLaunchKernelEx(&amp;cfg, <span class="fn">k_flex</span>, ...);</code></pre></div>
+    <div class="usebox">
+      <div class="yes"><h4>Use when</h4><ul><li>TMA multicast: one gmem load feeds several CTAs' smem</li><li>CTA pairs sharing tiles (Blackwell tcgen05 MMA works per cluster)</li><li>Composes directly with CLC, which steals at cluster granularity</li></ul></div>
+      <div class="no"><h4>Limits</h4><ul><li>Bigger clusters are harder to place → occupancy/launch latency risk (preferred dims exist to soften exactly this)</li></ul></div>
+    </div>
+  </article>
+</section>
+
+<!-- ============ INTRA-SM LAYER ============ -->
+<section class="layer" id="smlayer">
+  <div class="layerhead"><span class="tag t-sm">Layer 3</span><h2>Inside the SM</h2></div>
+  <p class="layersub">Scheduling warps and data movement against each other within a block — where the flops actually get fed.</p>
+  <div class="layerrel"><span class="regime">100s of ns → ns</span><span><b>The last refinement: from "which tile" to "which warp plays which role."</b> Layer 2 handed this block a tile; this layer schedules the warps within it against the memory system — hiding the hundreds-of-ns regime (HBM, L2) under the ns regime (resident-warp switching, tensor-core issue). It exists because layer 2's dispatch is only profitable if the tile's inner loop keeps the MMA pipes fed; a perfectly balanced grid of starved blocks wins nothing. The completion primitives introduced here (mbarriers, phases) are also the vocabulary the next layer's movers speak.</span></div>
+
+  <article class="tech" id="warpspec">
+    <h3>Warp specialization</h3>
+    <div class="badges"><span class="badge hop">practical on sm_90+</span><span class="badge">setmaxnreg</span></div>
+    <p>Split the block's warps into roles — producer warps issuing TMA loads, consumer warps running tensor-core MMAs, plus scheduler/epilogue warps — synchronized by mbarriers. This is software pipelining as warp-level scheduling, and it is how every fast Hopper/Blackwell GEMM, FlashAttention-3, CLC kernels, and megakernels are built. On Blackwell, <code>tcgen05</code> MMA is itself asynchronous (as Hopper's <code>wgmma.mma_async</code> was, with its fence/commit/wait protocol), so even the MMA is "issued by one warp, awaited by others." The frontier version is <em>heterogeneous-unit</em> pipelining: FlashAttention-4 overlaps the tensor cores against the SFUs (exp) and CUDA cores (rescaling) as additional pipeline agents — necessary because Blackwell's tensor throughput grew far faster than its SFU and ALU throughput.</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>@kernel
+def ws_kernel(...):
+    if my_warp in producers:
+        registers.shrink_to(40)          <span class="cm"># hand regs to the consumers</span>
+        while work: tma_load_next(); full[i].arrive()
+    else:
+        registers.grow_to(232)
+        while work: full[i].wait(); mma_tile(); empty[i].arrive()</code></pre><pre class="codepane pane-cu" hidden><code>__global__ void <span class="fn">ws_kernel</span>(...) {
+    int wid = threadIdx.x / 32;
+    if (wid &lt; NUM_PRODUCERS) {
+        <span class="pp">asm volatile</span>("setmaxnreg.dec.sync.aligned.u32 40;");  <span class="cm">// give up regs</span>
+        while (work) { tma_load_next_tile(); mbar_arrive(&amp;full[i]); }
+    } else {
+        <span class="pp">asm volatile</span>("setmaxnreg.inc.sync.aligned.u32 232;"); <span class="cm">// take them</span>
+        while (work) { mbar_wait(&amp;full[i]); mma_tile(); mbar_arrive(&amp;empty[i]); }
+    }
+}</code></pre></div>
+    <div class="usebox">
+      <div class="yes"><h4>Use when</h4><ul><li>Any tensor-core kernel that must hide gmem latency behind MMAs</li><li>Via CUTLASS / ThunderKittens / Triton (TLX) rather than raw PTX, usually</li></ul></div>
+      <div class="no"><h4>Limits</h4><ul><li>Manual pipeline depth / barrier bookkeeping; deadlocks are easy</li></ul></div>
+    </div>
+  </article>
+
+  <article class="tech" id="schedules">
+    <h3>Warpgroup schedules: cooperative vs ping-pong</h3>
+    <div class="badges"><span class="badge hop">sm_90</span><span class="badge bw">sm_120 family</span><span class="badge">subsumed by TMEM on sm_100</span></div>
+    <p>Given warp specialization, the next question is how the <em>consumer</em> warpgroups divide work. Two canonical answers, named after the CUTLASS kernel schedules:</p>
+    <p><b>Cooperative</b> — two consumer warpgroups split one large output tile (each takes half of a 256×128 tile), mainloop together, epilogue together. Simple, big tiles, but the epilogue's latency sits exposed at the end of every tile: while results convert and store, the tensor cores idle.</p>
+    <p><b>Ping-pong</b> — the two consumer warpgroups own <em>different</em> output tiles, phase-shifted: while warpgroup A runs its mainloop, warpgroup B runs its epilogue, then they swap, coordinated by named barriers (with the shared TMA producer feeding both). The epilogue is completely hidden behind the other warpgroup's MMAs — at the cost of two accumulators' worth of register pressure and trickier barrier choreography.</p>
+    <div class="diagram" aria-label="Ping-pong warpgroup schedule">
+      <div class="dl"><b>TMA</b><div class="dtrack"><span class="dbar b-steal" style="left:0;width:12%"></span><span class="dbar b-steal" style="left:14%;width:12%"></span><span class="dbar b-steal" style="left:28%;width:12%"></span><span class="dbar b-steal" style="left:42%;width:12%"></span><span class="dbar b-steal" style="left:56%;width:12%"></span><span class="dbar b-steal" style="left:70%;width:12%"></span></div></div>
+      <div class="dl"><b>WG A</b><div class="dtrack"><span class="dbar b-dev" style="left:0;width:34%"></span><span class="dbar b-sm" style="left:36%;width:14%"></span><span class="dbar b-dev appear" style="left:52%;width:34%"></span><span class="dbar b-sm appear2" style="left:88%;width:12%"></span></div></div>
+      <div class="dl"><b>WG B</b><div class="dtrack"><span class="dbar b-sm" style="left:10%;width:14%"></span><span class="dbar b-dev grow" style="left:26%;width:34%"></span><span class="dbar b-sm appear" style="left:62%;width:14%"></span><span class="dbar b-dev appear2" style="left:78%;width:22%"></span></div></div>
+      <div class="dcap">green = mainloop (MMA), amber = epilogue — each warpgroup's epilogue hides under the other's mainloop; tensor cores never wait</div>
+    </div>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>gemm = Gemm(schedule=Pingpong)   <span class="cm"># or Cooperative — profile both;</span>
+<span class="cm"># ping-pong tends to win with heavy epilogues or small tiles</span></code></pre><pre class="codepane pane-cu" hidden><code><span class="cm">// CUTLASS: the schedule is a type-level choice</span>
+using ScheduleHopper = cutlass::gemm::KernelTmaWarpSpecializedPingpong;
+<span class="cm">//                  or KernelTmaWarpSpecializedCooperative — profile both;</span>
+<span class="cm">// ping-pong tends to win when the epilogue is heavy (quantized stores,</span>
+<span class="cm">// gated activations fused between GEMMs) or tiles are small.</span></code></pre></div>
+    <div class="note"><b>The Blackwell twist</b> — on sm_100 this distinction disappears: the accumulator lives in <a href="#tmem">TMEM</a>, so the mainloop/epilogue decoupling that ping-pong bought with a second warpgroup's registers is now structural — the CUTLASS profiler explicitly ignores the schedule digit for SM100 kernels, and dedicated epilogue warps drain TMEM buffers while the MMA runs. But on the <b>sm_120 family</b> (consumer/workstation Blackwell), which lacks TMEM, the ping-pong vs cooperative choice is alive and well per the CUTLASS Blackwell docs — one more reason the two Blackwells need different kernels.</div>
+  </article>
+
+  <article class="tech" id="asyncbar">
+    <h3>Asynchronous barriers</h3>
+    <div class="badges"><span class="badge">hw-accelerated sm_80+</span><span class="badge">sm_90+ adds mbarrier tx-count</span><span class="badge">cuda::barrier / mbarrier</span></div>
+    <p>Split-phase synchronization: <em>arrive</em> now, do independent work, <em>wait</em> later. The primitive underneath warp specialization, TMA completion, and CLC responses. Scopes range from a warp subset to the whole cluster.</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>bar = shared_barrier(parties=block.size)
+
+token = bar.arrive()          <span class="cm"># signal: my data is ready</span>
+do_independent_work()         <span class="cm"># overlap instead of stalling</span>
+bar.wait(token)               <span class="cm"># block only when I truly need everyone</span></code></pre><pre class="codepane pane-cu" hidden><code>#include &lt;cuda/barrier&gt;
+__shared__ cuda::barrier&lt;cuda::thread_scope_block&gt; bar;
+if (threadIdx.x == 0) init(&amp;bar, blockDim.x);
+__syncthreads();
+
+auto token = bar.arrive();        <span class="cm">// signal: my data is ready</span>
+do_independent_work();            <span class="cm">// overlap instead of stalling</span>
+bar.wait(std::move(token));       <span class="cm">// block only when I truly need everyone</span></code></pre></div>
+  </article>
+
+  <article class="tech" id="pipelines">
+    <h3>cuda::pipeline</h3>
+    <div class="badges"><span class="badge">sm_80+</span><span class="badge">libcu++</span></div>
+    <p>A managed multi-stage buffer for producer–consumer staging when you want double/triple buffering without hand-rolled mbarrier state machines.</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>pipe = pipeline(stages=2)
+
+for i in range(tiles):
+    with pipe.produce():                     <span class="cm"># acquire -&gt; commit</span>
+        copy_async(smem[i % 2], src[i], pipe)
+    if i &gt; 0:
+        with pipe.consume():                 <span class="cm"># wait -&gt; release</span>
+            compute(smem[(i - 1) % 2])
+<span class="cm"># drain the final in-flight stage after the loop</span></code></pre><pre class="codepane pane-cu" hidden><code>#include &lt;cuda/pipeline&gt;
+__shared__ cuda::pipeline_shared_state&lt;cuda::thread_scope_block, 2&gt; st;
+auto pipe = cuda::make_pipeline(block, &amp;st);
+
+<span class="cm">// Real code defines block = cooperative_groups::this_thread_block(),
+// initializes shared state collectively, and uses documented aligned-size overloads.</span>
+for (int i = 0; i &lt; tiles; ++i) {
+    pipe.producer_acquire();
+    cuda::memcpy_async(block, smem[i % 2], src + i * TILE, TILE_BYTES, pipe);
+    pipe.producer_commit();
+    if (i &gt; 0) { pipe.consumer_wait(); compute(smem[(i-1) % 2]); pipe.consumer_release(); }
+}
+<span class="cm">// Drain the last committed stage—omitting this silently drops the final tile.</span>
+pipe.consumer_wait(); compute(smem[(tiles-1) % 2]); pipe.consumer_release();</code></pre></div>
+  </article>
+</section>
+<!-- ============ DATA MOVEMENT LAYER ============ -->
+<section class="layer" id="datalayer">
+  <div class="layerhead"><span class="tag t-data">Layer 4</span><h2>Data movement &amp; where to put things</h2></div>
+  <p class="layersub">Scheduling is also deciding where bytes should wait and which engine moves them. Blackwell adds specialized tensor memory, while each mover—ordinary loads/stores, copy engines, <code>cp.async</code>, bulk/TMA, DSMEM operations, and <code>tcgen05</code>—has a different issuer and completion contract.</p>
+  <div class="layerrel"><span class="regime">all regimes</span><span><b>Not a fourth rung — the object the other rungs schedule.</b> Layers 1–3 decide when and where <em>compute</em> runs; this layer catalogs the <em>transfers</em> that all of that overlapping exists to hide, spanning every regime of the ladder (ns smem hops to µs host copies). It sits fourth for a reading-order reason, not an architectural one: its completion contracts (mbarriers, bulk groups, tcgen05.wait) only make sense after layer 3 introduced the machinery. In <a href="#tuple">tuple</a> terms, layers 1–3 answer <em>when is work ready / who runs it</em>; this layer answers <em>where state lives, how it moves, how completion is observed</em>.</span></div>
+
+  <article class="tech" id="memmap">
+    <h3>The Blackwell memory map</h3>
+    <div class="badges"><span class="badge bw">datacenter Blackwell illustration</span><span class="badge">not every path uses mbarrier</span></div>
+    <p>This picture emphasizes kernel-managed tensor staging. It is not the entire CUDA memory model: local memory, constant/texture/read-only paths, L1, system memory, peer mappings, and external-device memory also matter. L2 is a cache on the global-address path, not a separately addressed TMA source. Capacity labels are illustrative B200 figures, not generic properties of every Blackwell GPU.</p>
+    <div class="diagram memmap" aria-label="Animated map of the Blackwell memory hierarchy and transfer instructions">
+    <svg viewBox="0 0 680 452" role="img">
+      <title>Blackwell memory hierarchy</title>
+      <defs><marker id="ma" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5.5" markerHeight="5.5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round"/></marker></defs>
+
+      <rect x="30" y="12" width="400" height="252" rx="8" fill="none" stroke="#334054" stroke-width="1" stroke-dasharray="4 4"/>
+      <text x="44" y="32" font-size="10.5" fill="#5d6a7e">SM (one of 148 on B200)</text>
+      <rect x="452" y="12" width="198" height="252" rx="8" fill="none" stroke="#334054" stroke-width="1" stroke-dasharray="4 4"/>
+      <text x="466" y="32" font-size="10.5" fill="#5d6a7e">peer SM (same cluster)</text>
+
+      <rect x="60" y="46" width="150" height="42" rx="5" fill="rgba(226,177,85,.13)" stroke="#e2b155" stroke-width="1"/>
+      <text x="135" y="64" font-size="11.5" fill="#e2b155" text-anchor="middle">registers</text>
+      <text x="135" y="79" font-size="9.5" fill="#8d99ac" text-anchor="middle">64K × 32b / SM</text>
+
+      <rect x="250" y="46" width="150" height="42" rx="5" fill="rgba(84,201,162,.13)" stroke="#54c9a2" stroke-width="1"/>
+      <text x="325" y="64" font-size="11.5" fill="#54c9a2" text-anchor="middle">TMEM</text>
+      <text x="325" y="79" font-size="9.5" fill="#8d99ac" text-anchor="middle">256 KB · 128 ln × 512 col</text>
+
+      <rect x="60" y="176" width="150" height="42" rx="5" fill="rgba(90,169,230,.13)" stroke="#5aa9e6" stroke-width="1"/>
+      <text x="135" y="194" font-size="11.5" fill="#5aa9e6" text-anchor="middle">SMEM</text>
+      <text x="135" y="209" font-size="9.5" fill="#8d99ac" text-anchor="middle">228 KB / SM</text>
+
+      <rect x="250" y="118" width="150" height="42" rx="5" fill="rgba(177,142,224,.13)" stroke="#b18ee0" stroke-width="1"/>
+      <text x="325" y="136" font-size="11.5" fill="#b18ee0" text-anchor="middle">tensor core</text>
+      <text x="325" y="151" font-size="9.5" fill="#8d99ac" text-anchor="middle">tcgen05.mma (async)</text>
+
+      <rect x="476" y="176" width="150" height="42" rx="5" fill="rgba(90,169,230,.10)" stroke="#5aa9e6" stroke-width="1" stroke-dasharray="3 3"/>
+      <text x="551" y="194" font-size="11.5" fill="#5aa9e6" text-anchor="middle">peer SMEM</text>
+      <text x="551" y="209" font-size="9.5" fill="#8d99ac" text-anchor="middle">DSMEM via cluster</text>
+
+      <rect x="140" y="304" width="400" height="38" rx="5" fill="rgba(141,153,172,.10)" stroke="#5d6a7e" stroke-width="1"/>
+      <text x="340" y="327" font-size="11.5" fill="#8d99ac" text-anchor="middle">L2 · 126 MB (persisting windows)</text>
+
+      <rect x="60" y="382" width="560" height="38" rx="5" fill="rgba(141,153,172,.10)" stroke="#5d6a7e" stroke-width="1"/>
+      <text x="340" y="405" font-size="11.5" fill="#8d99ac" text-anchor="middle">GMEM · HBM3e ≈ 8 TB/s   ·   ↔ host / peer GPUs: NVLink 5, PCIe, copy engines</text>
+
+      <path class="flow" d="M170 304 L135 218" fill="none" stroke="#e8825a" stroke-width="1.4" marker-end="url(#ma)"/>
+      <text x="102" y="262" font-size="9.5" fill="#e8825a">TMA load</text>
+      <path class="flow" d="M480 304 L545 218" fill="none" stroke="#e8825a" stroke-width="1.4" marker-end="url(#ma)"/>
+      <text x="516" y="262" font-size="9.5" fill="#e8825a">multicast</text>
+      <path class="flow" d="M210 190 L472 190" fill="none" stroke="#5aa9e6" stroke-width="1.2" marker-end="url(#ma)"/>
+      <text x="292" y="182" font-size="9.5" fill="#5aa9e6">st.async / TMA s2s</text>
+      <path class="flow" d="M135 176 L135 92" fill="none" stroke="#8d99ac" stroke-width="1.2" marker-end="url(#ma)"/>
+      <text x="143" y="138" font-size="9.5" fill="#8d99ac">ld / st</text>
+      <path class="flow" d="M210 186 L246 148" fill="none" stroke="#b18ee0" stroke-width="1.2" marker-end="url(#ma)"/>
+      <text x="188" y="158" font-size="9.5" fill="#b18ee0">A,B feed</text>
+      <path class="flow" d="M325 118 L325 92" fill="none" stroke="#54c9a2" stroke-width="1.4" marker-end="url(#ma)"/>
+      <text x="333" y="109" font-size="9.5" fill="#54c9a2">acc D</text>
+      <path class="flow" d="M250 158 L212 196" fill="none" stroke="#54c9a2" stroke-width="1.2" marker-end="url(#ma)"/>
+      <path class="flow" d="M245 67 L214 67" fill="none" stroke="#54c9a2" stroke-width="1.4" marker-end="url(#ma)"/>
+      <text x="196" y="42" font-size="9.5" fill="#54c9a2">tcgen05.ld (async)</text>
+      <path class="flow" d="M232 106 L286 66" fill="none" stroke="#54c9a2" stroke-width="1" marker-end="url(#ma)" opacity=".55" transform="translate(0,0)"/>
+      <text x="222" y="120" font-size="9.5" fill="#54c9a2" opacity=".8">tcgen05.cp</text>
+      <path class="flow" d="M100 218 L100 300" fill="none" stroke="#5aa9e6" stroke-width="1.2" marker-end="url(#ma)"/>
+      <text x="36" y="262" font-size="9.5" fill="#5aa9e6">TMA store</text>
+    </svg>
+    <div class="dcap">coral = bulk/tensor movement · green = <code>tcgen05</code> family. Completion differs by operation: load mbarrier, bulk store group, <code>cp.async</code> group, <code>tcgen05.wait</code>, or <code>tcgen05.commit</code> plus mbarrier.</div>
+    </div>
+    <div class="note"><b>What changed vs Hopper</b> — on relevant datacenter Blackwell targets, fifth-generation MMA accumulators live in TMEM instead of the register file. That can decouple MMA issue from register-heavy epilogues. The common path is global address space/cache → shared → tensor core → TMEM → registers → global, but only independent stages may overlap and each arrow has its own visibility rules.</div>
+  </article>
+
+  <article class="tech" id="movematrix">
+    <h3>Source → destination → completion matrix</h3>
+    <p>This is the fastest way to choose a mover. “Asynchronous” is not one memory model: waiting on the wrong completion primitive is a correctness bug.</p>
+    <table><thead><tr><th>Source → destination</th><th>Mechanism</th><th>Completion / ordering</th></tr></thead><tbody>
+      <tr><td>Pinned host ↔ local global</td><td><code>cudaMemcpyAsync</code>, 2D/3D variants, graph memcpy node</td><td>Stream/event; DMA engine when eligible</td></tr>
+      <tr><td>Peer global → local global</td><td><code>cudaMemcpyPeerAsync</code></td><td>Stream/event; path may be NVLink or PCIe</td></tr>
+      <tr><td>Global ↔ registers</td><td><code>ld.global</code> / <code>st.global</code></td><td>Instruction dependencies and CUDA memory model</td></tr>
+      <tr><td>Global → CTA shared</td><td>Per-thread <code>cp.async</code></td><td><code>commit_group</code> + <code>wait_group</code>/<code>wait_all</code></td></tr>
+      <tr><td>Global tensor → shared/DSMEM</td><td><code>cp.async.bulk.tensor</code>, optional multicast</td><td>Transaction-counting mbarrier</td></tr>
+      <tr><td>CTA shared → global tensor</td><td>Bulk tensor store, optional supported reduction</td><td>Bulk async-group commit/wait</td></tr>
+      <tr><td>CTA shared → local/remote cluster shared</td><td><code>cp.async.bulk</code> / <code>st.async</code></td><td>Operation-specific mbarrier</td></tr>
+      <tr><td>CTA shared → cluster shared reduction</td><td><code>cp.reduce.async.bulk</code></td><td>mbarrier; distinct from atomics</td></tr>
+      <tr><td>Global tensor region → L2</td><td>TMA prefetch hint</td><td>No shared-memory arrival event</td></tr>
+      <tr><td>Shared → TMEM</td><td><code>tcgen05.cp</code></td><td>Exact <code>tcgen05</code> ordering rules</td></tr>
+      <tr><td>TMEM → registers</td><td><code>tcgen05.ld</code></td><td><code>tcgen05.wait::ld</code></td></tr>
+      <tr><td>Registers → TMEM</td><td><code>tcgen05.st</code></td><td><code>tcgen05.wait::st</code></td></tr>
+      <tr><td>Tensor-core result → TMEM</td><td><code>tcgen05.mma</code></td><td><code>tcgen05.commit</code> + mbarrier when used</td></tr>
+      <tr><td>Remote symmetric heap</td><td>NVSHMEM put/get/atomic/signal</td><td>Operation-specific; <code>fence</code>, <code>quiet</code>, signal/wait</td></tr>
+    </tbody></table>
+  </article>
+
+  <article class="tech" id="tma">
+    <h3>TMA &amp; cp.async — feeding shared memory</h3>
+    <div class="badges"><span class="badge">cp.async: sm_80+</span><span class="badge hop">TMA: sm_90+</span><span class="badge">bulk tensor · multicast · im2col</span></div>
+    <p>Bulk/TMA operations move multidimensional tiles using a device-visible <code>CUtensorMap</code> encoded by the host (shape, strides, swizzle, OOB fill). Tensor loads commonly complete on an mbarrier; stores use bulk async groups. Families include global→shared tensor loads, shared→global stores, selected-CTA cluster multicast, im2col (and Blackwell <code>im2col::w</code> wide modes), indexed-row <code>tile::gather4</code> / <code>tile::scatter4</code>, L2 prefetch hints, supported shared→global reduction stores, non-tensor shared→cluster-shared copies, and <code>cp.reduce.async.bulk</code> into cluster shared memory. These are distinct instruction and completion families—not a generic global-to-global reduction engine.</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>tmap = TensorMap(dtype=bf16, shape, strides,     <span class="cm"># host: describe once</span>
+                 box=(TILE_M, TILE_K), swizzle="128B")
+
+@kernel
+def k(tmap):
+    bar = shared_barrier(parties=block.size)
+    if thread.is_leader:                     <span class="cm"># ONE thread issues the tile load</span>
+        tma_load_2d(smem, tmap, x, y, bar)
+        token = bar.arrive_tx(expect=TILE_BYTES)
+    else:
+        token = bar.arrive()                 <span class="cm"># everyone else just arrives</span>
+    bar.wait(token)                          <span class="cm"># EVERY thread waits, then reads</span>
+
+    fence_async_proxy()                      <span class="cm"># before the store path</span>
+    tma_store_2d(tmap, x, y, smem); bulk_commit(); bulk_wait(0)</code></pre><pre class="codepane pane-cu" hidden><code><span class="cm">// host: describe the tensor once</span>
+CUtensorMap map;
+cuTensorMapEncodeTiled(&amp;map, CU_TENSOR_MAP_DATA_TYPE_BFLOAT16,
+    /*rank*/2, d_ptr, dims, strides, boxDims, elemStrides,
+    CU_TENSOR_MAP_INTERLEAVE_NONE, CU_TENSOR_MAP_SWIZZLE_128B,
+    CU_TENSOR_MAP_L2_PROMOTION_L2_128B, CU_TENSOR_MAP_FLOAT_OOB_FILL_NONE);
+
+<span class="cm">// Protocol sketch — the CCCL sample pattern: every thread participates.</span>
+if (threadIdx.x == 0) init(&amp;bar, blockDim.x);   <span class="cm">// arrival count = all threads</span>
+__syncthreads();
+barrier::arrival_token token;
+if (threadIdx.x == 0) {                          <span class="cm">// one thread issues + expects bytes</span>
+    cde::cp_async_bulk_tensor_2d_global_to_shared(smem, &amp;map, x, y, bar);
+    token = cuda::device::barrier_arrive_tx(bar, 1, TILE_BYTES);
+} else {
+    token = bar.arrive();                        <span class="cm">// everyone else just arrives</span>
+}
+bar.wait(std::move(token));                      <span class="cm">// EVERY thread waits before touching smem</span>
+<span class="cm">// Exact libcudacxx overloads/native barrier handles vary; use the guide's
+// complete sample for your toolkit rather than treating this sketch as drop-in code.</span>
+
+<span class="cm">// stores go the other way; fence the generic→async proxy first:</span>
+cde::fence_proxy_async_shared_cta();
+cde::cp_async_bulk_tensor_2d_shared_to_global(&amp;map, x, y, smem);
+cp_async_bulk_commit_group();  cp_async_bulk_wait_group_read&lt;0&gt;();</code></pre></div>
+    <div class="usebox">
+      <div class="yes"><h4>Use when</h4><ul><li>Any tensor-core kernel: TMA is the intended way to fill smem on sm_90+</li><li>Multicast + clusters: cut gmem traffic when CTAs share tiles</li><li><code>cp.async</code> remains the portable per-thread fallback (sm_80+)</li></ul></div>
+      <div class="no"><h4>Limits</h4><ul><li>Descriptor lives on host (device-side tensormap update exists but is costly)</li><li>Swizzle patterns must match what the MMA expects — get them from CUTLASS</li></ul></div>
+    </div>
+  </article>
+
+  <article class="tech" id="cpasync">
+    <h3>Per-thread <code>cp.async</code> vs bulk async</h3>
+    <div class="badges"><span class="badge">global → CTA shared</span><span class="badge">sm_80+</span></div>
+    <p>Legacy <code>cp.async</code> is not TMA: each thread copies a small aligned segment from global to CTA shared, optionally zero-filling short sources, then commits and waits on async groups. It is ideal for regular tiles when a tensor map is unnecessary or unavailable. Bulk operations are typically issued by an elected thread and move larger regions with mbarrier or bulk-group completion.</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>cp_async(smem_addr, gmem_ptr, 16)   <span class="cm"># each thread copies its 16B segment</span>
+cp_async_commit()
+do_independent_math()               <span class="cm"># overlap while the copy runs</span>
+cp_async_wait(0)
+block.sync()                        <span class="cm"># tile now safe for all consumers</span></code></pre><pre class="codepane pane-cu" hidden><code><span class="cm">// PTX-shaped minimal sketch; each participating thread copies its segment</span>
+<span class="pp">asm volatile</span>("cp.async.cg.shared.global [%0], [%1], 16;" :: "r"(smem_addr), "l"(gmem_ptr));
+<span class="pp">asm volatile</span>("cp.async.commit_group;");
+do_independent_math();
+<span class="pp">asm volatile</span>("cp.async.wait_group 0;");
+__syncthreads();                 <span class="cm">// make the tile safe for all CTA consumers</span></code></pre></div>
+    <div class="usebox"><div class="yes"><h4>Use when</h4><ul><li>Small regular global→shared segments with per-thread address generation</li><li>Portable Ampere-and-later pipelines through <code>cuda::memcpy_async</code></li><li>Reg↔smem in MMA layouts: <code>ldmatrix</code> / <code>stmatrix</code> (epilogue staging)</li></ul></div><div class="no"><h4>Choose bulk/TMA instead</h4><ul><li>Multidimensional tiles, swizzle/OOB handling, multicast, or single-thread issue</li></ul></div></div>
+  </article>
+
+  <article class="tech" id="tmem">
+    <h3>Tensor memory (TMEM)</h3>
+    <div class="badges"><span class="badge bw">architecture-specific Blackwell targets</span><span class="badge">tcgen05.alloc / ld / st / cp</span><span class="badge">logical lane/column space</span></div>
+    <p>TMEM is a specialized lane/column-addressed resource used principally for fifth-generation MMA accumulators and, in supported forms, operand A and block-scale factors. It is not conventional byte-addressable shared memory. Allocation, access permissions, lane mapping, and CTA-group participation depend on the exact instruction form. <code>tcgen05.ld</code>, <code>st</code>, <code>cp</code>, <code>mma</code>, allocation, and deallocation do not share one universal asynchronous completion rule.</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>tmem = tmem_alloc(cols=512, by=warp0)     <span class="cm"># address lands in smem</span>
+
+<span class="cm"># mainloop: MMA accumulates into TMEM, issued by ONE thread</span>
+mma_async(tmem[buf], a_desc, b_desc)      <span class="cm"># completes via mbarrier</span>
+
+<span class="cm"># epilogue: the whole warpgroup drains its quarter of the lanes</span>
+regs = tmem_load(tmem[other], layout="32x32b")   <span class="cm"># async</span>
+tmem_load_wait()                          <span class="cm"># regs valid only after this</span>
+
+tmem_copy(tmem_sf, sf_smem)               <span class="cm"># smem -&gt; tmem (scale factors)</span>
+tmem_dealloc(tmem, by=warp0)              <span class="cm"># same warp that allocated frees</span></code></pre><pre class="codepane pane-cu" hidden><code>__shared__ uint32_t tmem_addr;                <span class="cm">// alloc result lands in smem</span>
+if (warp_id == 0)
+    <span class="pp">asm volatile</span>("tcgen05.alloc.cta_group::1.sync.aligned.shared::cta.b32 [%0], %1;"
+                 :: "r"(__cvta_generic_to_shared(&amp;tmem_addr)), "n"(512));
+__syncthreads();
+uint32_t tacc = tmem_addr;                    <span class="cm">// addr = base + (lane&lt;&lt;16) + col</span>
+
+<span class="cm">// mainloop: issue one or more tcgen05.mma operations writing TMEM,
+// then tcgen05.commit ... mbarrier::arrive associates their completion
+// with an mbarrier before a dependent TMEM consumer proceeds.</span>
+<span class="cm">// Participation and architecture target depend on the exact instruction form.</span>
+
+<span class="cm">// epilogue: whole warpgroup pulls its lanes into registers, asynchronously</span>
+<span class="pp">asm volatile</span>("tcgen05.ld.sync.aligned.32x32b.x64.b32 {%0,…}, [%1];" …);
+<span class="pp">asm volatile</span>("tcgen05.wait::ld.sync.aligned;");   <span class="cm">// regs valid after this</span>
+
+<span class="cm">// scale factors / A-operand staging: smem → tmem without touching regs</span>
+<span class="cm">//   tcgen05.cp.cta_group::1.128x256b [tacc_sf], sf_smem_desc;</span>
+
+if (warp_id == 0)
+    <span class="pp">asm volatile</span>("tcgen05.dealloc.cta_group::1.sync.aligned.b32 %0, %1;"
+                 :: "r"(tacc), "n"(512));      <span class="cm">// same warp that alloc'd frees</span></code></pre></div>
+    <div class="usebox">
+      <div class="yes"><h4>Use when</h4><ul><li>Always, implicitly, in any tcgen05 kernel — the accumulator lives here</li><li>Double-buffer it: 512 columns vs ≤256 needed per tile → ping-pong buffers let tile N's MMA run while tile N−1's epilogue drains</li><li><code>tcgen05.relinquish_alloc_permit</code> lets the next CTA queue for the SM early</li></ul></div>
+      <div class="no"><h4>Limits</h4><ul><li>Layouts are rigid (32x32b, 16x64b…) and must match the MMA's write pattern</li><li>Warp→lane restriction means no single-warp epilogues</li><li>Recent PTX adds <code>tcgen05.ld.red</code> (load-with-reduce out of TMEM) and <code>tcgen05.shift</code> (row shifts within TMEM)</li><li>Debug with <code>nvcc --g-tensor-memory-access-check</code>; use CUTLASS/CuTe DSL for real kernels</li></ul></div>
+    </div>
+  </article>
+
+  <article class="tech" id="dsmem">
+    <h3>DSMEM &amp; cluster transfers</h3>
+    <div class="badges"><span class="badge hop">sm_90+</span><span class="badge">st.async · TMA smem↔smem</span></div>
+    <p>Within a cluster, a CTA can address a peer CTA's shared memory directly — a fourth on-chip destination that skips gmem entirely for producer→consumer patterns across blocks (split-K partial sums, halo exchange, cluster-wide reductions).</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>peer = cluster.peer(rank).shared          <span class="cm"># direct ld/st into neighbor smem</span>
+st_async(peer.slot, value, peer.mbar)     <span class="cm"># async remote store, mbarrier-completed</span>
+red_async(peer.sum, x)                    <span class="cm"># async reduction into peer smem</span>
+cluster.sync()</code></pre><pre class="codepane pane-cu" hidden><code>cg::cluster_group cl = cg::this_cluster();
+int* peer = cl.map_shared_rank(my_smem, peer_rank);   <span class="cm">// direct ld/st works</span>
+
+<span class="cm">// async, mbarrier-completed remote store (cuda::ptx or raw PTX):</span>
+cuda::ptx::st_async(peer_ptr, value, remote_mbar);
+<span class="cm">// red.async: asynchronous reduction into peer smem (cluster-wide sums);</span>
+<span class="cm">// recent PTX extends st.async/red.async to global and multimem targets</span>
+<span class="cm">// bulk: cp.async.bulk.shared::cluster.shared::cta   (TMA smem→smem)</span>
+cl.sync();</code></pre></div>
+  </article>
+
+  <article class="tech" id="hostpaths">
+    <h3>Host, managed, peer, storage &amp; network paths</h3>
+    <div class="badges"><span class="badge">copy engines</span><span class="badge">NVLink / PCIe / C2C</span><span class="badge">GDS · RDMA · NVSHMEM</span></div>
+    <p><b>Pinned host memory</b> is the reliable path for asynchronous host DMA; pageable transfers may stage and can block the host under API-specific rules. Pipeline H2D of batch N+1, compute of N, and D2H of N−1 in separate nonblocking streams with events. Query engine capabilities and profile rather than assuming a fixed number or direction of engines.</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>h = pinned_alloc(nbytes)                  <span class="cm"># pinned or no overlap</span>
+for i in range(batches):
+    q = i % 3                             <span class="cm"># three queues in flight</span>
+    copy_async(d_in[q], h[q], stream=copy_in[q])
+    input_ready[q].record(copy_in[q]);  compute[q].wait(input_ready[q])
+    launch(kernel, stream=compute[q])
+    output_ready[q].record(compute[q]); copy_out[q].wait(output_ready[q])
+    copy_async(h_out[q], d_out[q], stream=copy_out[q])</code></pre><pre class="codepane pane-cu" hidden><code>cudaHostAlloc(&amp;h[0], bytes, cudaHostAllocDefault);
+for (int i = 0; i &lt; batches; ++i) {
+  int q = i % 3;
+  cudaMemcpyAsync(d_in[q], h[q], bytes, cudaMemcpyHostToDevice, copy_in[q]);
+  cudaEventRecord(input_ready[q], copy_in[q]);
+  cudaStreamWaitEvent(compute[q], input_ready[q]);
+  <span class="fn">kernel</span>&lt;&lt;&lt;g,b,0,compute[q]&gt;&gt;&gt;(d_in[q], d_out[q]);
+  cudaEventRecord(output_ready[q], compute[q]);
+  cudaStreamWaitEvent(copy_out[q], output_ready[q]);
+  cudaMemcpyAsync(h_out[q], d_out[q], bytes, cudaMemcpyDeviceToHost, copy_out[q]);
+}</code></pre></div>
+    <p><b>Managed memory</b> trades explicit copies for migration/coherence; prefetch to the next processor before use. <b>Mapped host/system memory</b> avoids a copy but pays interconnect latency and is best for sparse or one-pass access. Grace-Blackwell coherent memory and EGM are platform/allocation-specific—not arbitrary “any memory in the node.”</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>p = malloc_managed(nbytes)                <span class="cm"># migrates on demand</span>
+loc = MemLocation(device)
+prefetch_async(p, nbytes, loc, stream=prefetch_stream)  <span class="cm"># CUDA 13 signature</span></code></pre><pre class="codepane pane-cu" hidden><code>cudaMallocManaged(&amp;p, bytes);
+cudaMemLocation loc{cudaMemLocationTypeDevice, device};   <span class="cm">// CUDA 13 signature</span>
+cudaMemPrefetchAsync(p, bytes, loc, /*flags*/0, prefetch_stream);
+<span class="fn">kernel</span>&lt;&lt;&lt;g,b,0,prefetch_stream&gt;&gt;&gt;(p);
+
+cudaHostAlloc(&amp;h_mapped, bytes, cudaHostAllocMapped);
+cudaHostGetDevicePointer(&amp;d_alias, h_mapped, 0); <span class="cm">// zero-copy mapping</span></code></pre></div>
+    <p><b>Peer DMA</b> and direct peer access are different: <code>cudaMemcpyPeerAsync</code> is stream-ordered copying, while a kernel's peer loads/stores/atomics follow the memory model. The physical path depends on topology. For GPU-initiated communication, NVSHMEM provides symmetric-heap put/get/atomics/signals; <code>fence</code> orders whereas <code>quiet</code> establishes completion according to NVSHMEM semantics. On NVLink-switch systems, <code>multimem.ld_reduce / .st / .red</code> target multicast addresses so the switch fabric performs the reduction — the mechanism behind NCCL's NVLS algorithms and ThunderKittens' multicast "parallel global layouts."</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>if device.can_access_peer(dst_dev): enable_peer_access(src_dev)
+copy_peer_async(dst, dst_dev, src, src_dev, stream=s)
+
+<span class="cm"># device-side NVSHMEM:</span>
+put_nbi(remote_dst, local_src, nbytes, pe)  <span class="cm"># one-sided, GPU-initiated</span>
+quiet()                                     <span class="cm"># completion (fence = ordering only)</span>
+signal(remote_flag, 1, pe)</code></pre><pre class="codepane pane-cu" hidden><code>cudaDeviceCanAccessPeer(&amp;can, dstDev, srcDev);
+cudaDeviceEnablePeerAccess(srcDev, 0);
+cudaMemcpyPeerAsync(dst, dstDev, src, srcDev, bytes, s);
+
+<span class="cm">// device-side NVSHMEM sketch:</span>
+nvshmem_putmem_nbi(remote_dst, local_src, bytes, pe);
+nvshmem_quiet();
+nvshmem_signal_op(signal, 1, NVSHMEM_SIGNAL_SET, pe);</code></pre></div>
+    <p><b>External data sources:</b> GPUDirect Storage can move file data to GPU memory without a CPU bounce buffer; GPUDirect RDMA lets supported NICs access GPU memory. These have their own registration, alignment, queue, and completion APIs and should be double-buffered against compute just like host DMA.</p>
+    <p><b>Recent batch &amp; hardware movers (CUDA 12.8–13.x):</b> <code>cudaMemcpyBatchAsync</code> / <code>cudaMemcpy3DBatchAsync</code> submit many copies in one call with per-operation attributes (fewer launches, better engine packing); <code>cuMemBatchDecompressAsync</code> drives Blackwell's hardware <b>Decompression Engine</b>, turning decompression into another schedulable async engine; VMM allocations exported with fabric handles (<code>CU_MEM_HANDLE_TYPE_FABRIC</code>) can be shared across multi-node NVLink domains; and NCCL's device API (2.28+) issues collective communication from <em>inside</em> kernels, the library-grade form of the GPU-initiated pattern above. Batched prefetch/discard variants are also appearing across 13.x — check the current memory API reference.</p>
+  </article>
+
+  <article class="tech" id="overlap">
+    <h3>The canonical Blackwell overlap recipe</h3>
+    <div class="badges"><span class="badge bw">how it all composes</span></div>
+    <p>A state-of-the-art sm_100 GEMM/attention mainloop keeps <b>five agents in flight at once</b>, each owned by different warps, with no <code>__syncthreads()</code>-style rendezvous — each path uses its own completion contract from the <a href="#movematrix">movement matrix</a>:</p>
+    <div class="diagram" aria-label="Animated five-agent overlap">
+      <div class="dl"><b>TMA</b><div class="dtrack"><span class="dbar b-steal" style="left:0;width:18%"></span><span class="dbar b-steal" style="left:22%;width:18%"></span><span class="dbar b-steal" style="left:44%;width:18%"></span><span class="dbar b-steal" style="left:66%;width:18%"></span></div></div>
+      <div class="dl"><b>MMA</b><div class="dtrack"><span class="dbar b-dev grow" style="left:12%;width:22%"></span><span class="dbar b-dev appear" style="left:36%;width:22%"></span><span class="dbar b-dev appear2" style="left:60%;width:22%"></span></div></div>
+      <div class="dl"><b>epi ld</b><div class="dtrack"><span class="dbar b-sm appear" style="left:38%;width:16%"></span><span class="dbar b-sm appear2" style="left:62%;width:16%"></span></div></div>
+      <div class="dl"><b>store</b><div class="dtrack"><span class="dbar b-host appear2" style="left:58%;width:16%"></span><span class="dbar b-host appear2" style="left:80%;width:14%"></span></div></div>
+      <div class="dl"><b>CLC</b><div class="dtrack"><span class="dbar b-part" style="left:8%;width:6%"></span><span class="dbar b-part" style="left:32%;width:6%"></span><span class="dbar b-part" style="left:56%;width:6%"></span></div></div>
+      <div class="dcap">TMA prefetches tile k+2 · tcgen05.mma computes tile k+1 into TMEM buffer A · tcgen05.ld drains tile k from TMEM buffer B · TMA stores tile k−1 · the scheduler warp steals the next tile via CLC — all simultaneously</div>
+    </div>
+    <p>The enabling pieces, mapped to the sections above: TMA multi-stage smem buffering (<a href="#tma">TMA</a>) hides gmem latency; <b>TMEM double buffering</b> (<a href="#tmem">TMEM</a>) decouples MMA from epilogue — the single biggest new overlap Blackwell adds, since on Hopper the accumulator sat in the epilogue's own registers; warp specialization (<a href="#warpspec">roles</a>) gives each agent an owner; async barriers (<a href="#asyncbar">mbarriers</a>), bulk-async groups, <code>tcgen05.wait</code>, and proxy fences carry all the synchronization; and CLC (<a href="#clc">stealing</a>) keeps the whole machine fed. When one of these agents shows up as a gap in the profiler, the corresponding section is the fix.</p>
+  </article>
+</section>
+
+<!-- ============ PARTITIONING ============ -->
+<section class="layer" id="partlayer">
+  <div class="layerhead"><span class="tag t-part">Layer 5</span><h2>Partitioning the GPU</h2></div>
+  <p class="layersub">When scheduling means deciding which client, process, or workload owns which SMs.</p>
+  <div class="layerrel"><span class="regime">static → ms</span><span><b>Not the bottom — the outermost scope.</b> Partitioning decides <em>which machine</em> the four layers above see, before any of them run; it could as defensibly be layer 0. Decisions here change slowly (config-time to milliseconds) but bind everything: a green-context slice shrinks layer 1's SM budget, redraws layer 2's wave arithmetic and steal pool, and (via MLOPart) even changes layer 4's memory topology. The interaction trap runs the other way too — a layer-2 persistent grid hard-sized to "all SMs" is quietly making a layer-5 decision it has no right to make.</span></div>
+
+  <article class="tech" id="green">
+    <h3>Green contexts</h3>
+    <div class="badges"><span class="badge">driver API</span><span class="badge">runtime API since CUDA 13.1</span></div>
+    <p>Carve a device's SMs into partitions and launch into a context that only uses its slice — and, crucially, other contexts (including the primary one) stay off those SMs. The clean way to guarantee comm kernels or a latency-critical decode loop always have hardware, without MIG's rigidity.</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>all_sms = device.resources(type="SM")
+part, rest = all_sms.split(groups=1, min_sms=16)  <span class="cm"># 16 is a MINIMUM (may round up)</span>
+
+gctx = GreenContext(device, resources=[part])  <span class="cm"># partition now provisioned:</span>
+gs   = gctx.stream(non_blocking=True)          <span class="cm"># other contexts stay off it</span>
+
+launch(comm_kernel, stream=gs)      <span class="cm"># runs only on the reserved SMs</span>
+<span class="cm"># CUDA 13.1+: same flow via runtime cudaGreenCtx* APIs (now recommended)</span></code></pre><pre class="codepane pane-cu" hidden><code>CUdevResource all, part[1], rest;  unsigned n = 1;
+cuDeviceGetDevResource(dev, &amp;all, CU_DEV_RESOURCE_TYPE_SM);
+cuDevSmResourceSplitByCount(part, &amp;n, &amp;all, &amp;rest, 0, /*minSMs*/ 16);
+
+CUdevResourceDesc desc;  cuDevResourceGenerateDesc(&amp;desc, part, 1);
+CUgreenCtx gctx;  cuGreenCtxCreate(&amp;gctx, desc, dev, CU_GREEN_CTX_DEFAULT_STREAM);
+CUstream gs;      cuGreenCtxStreamCreate(&amp;gs, gctx, CU_STREAM_NON_BLOCKING, 0);
+<span class="cm">// launches into gs run only on the reserved SMs (CUDA 13.1+: cudaGreenCtx* in runtime)</span></code></pre></div>
+    <div class="usebox">
+      <div class="yes"><h4>Use when</h4><ul><li>Comm/compute overlap needs a hard guarantee, not a priority hint</li><li>Multiple models or phases (prefill vs decode) inside one process</li></ul></div>
+      <div class="no"><h4>Limits</h4><ul><li>SM splits have granularity (per-GPC); reserved SMs idle if the slice has no work</li></ul></div>
+    </div>
+  </article>
+
+  <article class="tech" id="mps">
+    <h3>MPS — multi-process service</h3>
+    <div class="badges"><span class="badge">deployment</span><span class="badge">no code changes</span></div>
+    <p>Lets kernels from multiple processes run concurrently on one GPU by funneling them through a shared server, with optional per-client SM percentage caps — spatial sharing with soft isolation.</p>
+<pre><code>nvidia-cuda-mps-control -d                      <span class="cm"># start daemon</span>
+CUDA_MPS_ACTIVE_THREAD_PERCENTAGE=40 ./server_a  <span class="cm"># soft-cap this client</span>
+CUDA_MPS_ACTIVE_THREAD_PERCENTAGE=60 ./server_b
+
+<span class="cm"># CUDA 13.1+: static SM partitioning — EXCLUSIVE SM sets per client (CC 8.0+)</span>
+<span class="cm"># CUDA 13.1+, B200/B300: MLOPart — split one GPU into two locality-optimized</span>
+<span class="cm"># CUDA devices (fewer SMs/memory each, lower latency, better intra-GPU P2P;</span>
+<span class="cm"># trades DRAM bandwidth; no MIG-style isolation; per-user, no root):</span>
+echo start_server -uid $UID -mlopart | nvidia-cuda-mps-control</code></pre>
+    <p>MLOPart matters for this guide's topic because it is a <em>scheduling-relevant memory topology choice</em>: latency-bound work (small-batch decode, atomic-heavy kernels) can prefer a locality partition over the whole GPU's bandwidth — A/B-testable with zero code changes.</p>
+  </article>
+
+  <article class="tech" id="mig">
+    <h3>MIG &amp; time-slicing</h3>
+    <div class="badges"><span class="badge">deployment</span><span class="badge">hard isolation</span></div>
+    <p>MIG hard-partitions a B200 into up to seven instances with dedicated SMs, L2 slices, and memory bandwidth — true isolation for multi-tenant serving, at the cost of flexibility. Time-slicing is the default when neither MPS nor MIG is used: whole-GPU context switches between processes, fine for dev boxes, wrong for latency SLOs.</p>
+<pre><code>nvidia-smi -i 0 -mig 1
+nvidia-smi mig -cgi 2g.45gb,2g.45gb -C     <span class="cm"># create two instances</span></code></pre>
+  </article>
+</section>
+
+<!-- ============ ADJACENT ============ -->
+<section class="layer" id="xlayer">
+  <div class="layerhead"><span class="tag t-x">Appendix</span><h2>Adjacent knobs</h2></div>
+  <p class="layersub">Not scheduling per se, but they change what the scheduler's choices cost.</p>
+
+  <article class="tech" id="knobs">
+    <h3>Sync domains · L2 policy · occupancy</h3>
+    <div class="badges"><span class="badge">sm_90+ for domains</span></div>
+    <p><b>Memory synchronization domains</b> stop a comm kernel's heavy fences from stalling unrelated compute kernels: tag launches into separate domains and fences only order within a domain — directly improves concurrent comm + compute overlap.</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>launch(nccl_kernel, stream=s, mem_sync_domain=REMOTE)
+<span class="cm"># its heavy fences now order only within its own domain — compute</span>
+<span class="cm"># kernels in the default domain stop paying for them</span></code></pre><pre class="codepane pane-cu" hidden><code>cudaLaunchAttribute a{};
+a.id = cudaLaunchAttributeMemSyncDomain;
+a.val.memSyncDomain = cudaLaunchMemSyncDomainRemote;  <span class="cm">// NCCL-style kernels</span></code></pre></div>
+    <p><b>L2 access policy windows</b> give a region a persisting preference (not a pin), changing the value of temporal reuse across kernels. <b>Occupancy controls</b> — <code>__launch_bounds__</code>, active-block/cluster occupancy queries, dynamic shared-memory opt-in, TMEM use, nonportable cluster-size opt-in, required/preferred cluster dimensions, and cluster scheduling policy — shape residency. <b>Lazy loading</b> defers module/JIT work to first use; warm critical kernels before measuring steady state.</p>
+  </article>
+
+  <article class="tech" id="syncmodel">
+    <h3>Synchronization primitives you must not confuse</h3>
+    <table><thead><tr><th>Primitive</th><th>Scope / purpose</th><th>Minimal form</th></tr></thead><tbody>
+      <tr><td>Warp sync</td><td>Converge named lanes; warp-level memory ordering</td><td><code>__syncwarp(mask)</code></td></tr>
+      <tr><td>CTA barrier</td><td>Execution + shared-memory visibility</td><td><code>__syncthreads()</code></td></tr>
+      <tr><td>Named/split barrier</td><td>Subset arrival, producer/consumer pipelines</td><td><code>bar.arrive()</code>, then <code>bar.wait(token)</code></td></tr>
+      <tr><td>Cluster barrier</td><td>Order DSMEM use and keep peer allocations alive</td><td><code>cg::this_cluster().sync()</code></td></tr>
+      <tr><td>Grid barrier</td><td>Cooperative-grid phase boundary</td><td><code>cg::this_grid().sync()</code></td></tr>
+      <tr><td>Fence</td><td>Orders memory; does not make peers rendezvous</td><td><code>cuda::atomic_thread_fence(order, scope)</code></td></tr>
+      <tr><td>Scoped atomic</td><td>Data + synchronization at block/cluster/device/system scope</td><td><code>cuda::atomic_ref&lt;T, scope&gt;</code></td></tr>
+      <tr><td>Async proxy fence</td><td>Visibility between generic, async, tensor-map proxies</td><td><code>fence.proxy.async...</code></td></tr>
+    </tbody></table>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>ready = device_atomic(flag)
+if producer:
+    write_payload(); ready.store(1, order="release")
+if consumer:
+    while ready.load(order="acquire") != 1: pass
+    read_payload()</code></pre><pre class="codepane pane-cu" hidden><code><span class="cm">// Modern producer/consumer flag: publish data, then signal with release;</span>
+cuda::atomic_ref&lt;int, cuda::thread_scope_device&gt; ready(*flag);
+if (producer) { write_payload(); ready.store(1, cuda::memory_order_release); }
+if (consumer) { while (!ready.load(cuda::memory_order_acquire)) {} read_payload(); }</code></pre></div>
+  </article>
+
+  <article class="tech" id="completeness">
+    <h3>Completeness checklist: orchestration techniques</h3>
+    <p>These mechanisms are less Blackwell-specific but often win before low-level PTX:</p>
+    <ul class="refs">
+      <li><b>Graph composition/update:</b> child graphs, empty fan-in/fan-out nodes, event nodes, external-semaphore nodes, allocation/free nodes, edge data/ports, <code>cudaGraphExecUpdate</code>, per-node update, upload, and first-launch warm-up.</li>
+      <li><b>Graph capture:</b> global/thread-local/relaxed modes, multi-stream fork/join through events, dependency-update APIs, capture invalidation, and capture into an existing graph.</li>
+      <li><b>Batch work before scheduling it:</b> cuBLAS grouped/batched GEMM, cuBLASLt, CUTLASS grouped schedulers, and NCCL group calls often beat many tiny independent launches.</li>
+      <li><b>Host continuations:</b> <code>cudaLaunchHostFunc</code> queues CPU work after preceding stream commands without blocking the submitting thread; the callback must obey CUDA API restrictions.</li>
+      <li><b>Avoid hidden serialization:</b> understand legacy NULL-stream semantics, per-thread default streams, synchronous allocation/page-locking/configuration calls, and prefer stream queries/events over broad <code>cudaDeviceSynchronize()</code>.</li>
+      <li><b>Resource sharing ladder:</b> launch priority (hint) → execution-affinity SM-count limit → MPS resource limiting / static SM partitioning → MLOPart locality devices (B200/B300) → green-context SM resource partition → MIG hardware instance. None except MIG partitions the complete memory/fault/security domain.</li>
+      <li><b>Device work discovery:</b> persistent atomic queues, hierarchical queues, work donation/stealing, Stream-K/split-K, CLC, CDP2, device graphs, and megakernels solve different kinds of dynamism.</li>
+      <li><b>Multi-device:</b> ordinary graphs do not automatically schedule a distributed DAG; encode peer copies/events or use NCCL/NVSHMEM. Multi-device cooperative launch has stringent support constraints.</li>
+    </ul>
+  </article>
+</section>
+
+<!-- ============ WORKED EXAMPLE ============ -->
+<section class="layer" id="gemm">
+  <div class="layerhead"><span class="tag t-x">Worked example</span><h2>One algorithm, every technique: matmul</h2></div>
+  <p class="layersub">C = A·B, taken from naive to state of the art. Each stage names the profiler symptom that motivates it, the technique that fixes it, and what it buys. Read top to bottom: this is roughly the actual optimization order.</p>
+
+  <div class="stage">
+    <div class="snum">0</div>
+    <div class="sbody">
+      <h3>Baseline: one CTA per output tile</h3>
+      <p>Launch a <code>(M/128, N/256)</code> grid, each block computes one tile: load A and B fragments to smem with plain <code>ld</code>, <code>__syncthreads()</code>, MMA, store. The hardware scheduler assigns blocks to SMs. This already gets decent occupancy — everything below fixes a specific way this leaves performance on the table.</p>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="snum">1</div>
+    <div class="sbody">
+      <h3>Tensor cores idle between loads → <a href="#tma">TMA</a> + <a href="#warpspec">warp specialization</a> + <a href="#asyncbar">mbarriers</a></h3>
+      <p><b>Symptom:</b> the MMA pipe sits idle while every warp does address math and waits on gmem. <b>Fix:</b> split roles — one elected thread issues TMA tile loads into a 3–5 stage circular smem buffer; producer warps drop to 40 registers via <code>setmaxnreg</code>, consumer warps take 232 and run MMAs; full/empty mbarriers coordinate. <b>Buys:</b> gmem latency fully hidden behind compute; this is the single largest jump, from ~30–40% to &gt;80% of peak on a big square GEMM. (On sm_80 hardware, <a href="#pipelines">cuda::pipeline</a> + <code>cp.async</code> is the same idea in portable form.)</p>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="snum">2</div>
+    <div class="sbody">
+      <h3>MMA stalls while results drain → <a href="#tmem">TMEM double buffering</a> <span class="badge bw" style="vertical-align:2px">Blackwell</span></h3>
+      <p><b>Symptom:</b> on Hopper, the accumulator lives in the consumer warpgroup's registers, so the mainloop can't start tile N+1 until the epilogue finishes post-processing tile N — the classic fix being the <a href="#schedules">ping-pong schedule</a>, which buys the overlap with a second warpgroup's registers. <b>Fix:</b> on sm_100, <code>tcgen05.mma</code> accumulates into TMEM. A 128×256 f32 tile needs 256 of the 512 columns — so allocate both halves and ping-pong: MMA writes buffer A while the epilogue warpgroup drains buffer B via <code>tcgen05.ld</code>, converts, and TMA-stores. <b>Buys:</b> mainloop and epilogue fully overlap, and the register file is freed for epilogue fusion (bias, activation, quantization) instead of accumulator storage.</p>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="snum">3</div>
+    <div class="sbody">
+      <h3>Bandwidth-bound on operand loads → <a href="#clusters">clusters</a> + <a href="#tma">TMA multicast</a></h3>
+      <p><b>Symptom:</b> neighboring tiles in a column all read the same B tile; each CTA fetching its own copy doubles gmem traffic. <b>Fix:</b> launch 2×1 clusters — the two CTAs sit on paired SMs, one TMA multicast fills both CTAs' smem from a single gmem read, and 2-SM <code>tcgen05.mma</code> (<code>cta_group::2</code>) lets the pair share operands outright. Request 4×1 as a <a href="#clusters">preferred dim</a> with 2×1 fallback so fragmented SMs don't stall launches. <b>Buys:</b> up to half the operand traffic; on bandwidth-bound shapes this is the difference between compute-bound and not.</p>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="snum">4</div>
+    <div class="sbody">
+      <h3>The tail wave → <a href="#persistent">stream-K</a>, then <a href="#clc">CLC</a> <span class="badge bw" style="vertical-align:2px">Blackwell</span></h3>
+      <p>(Order matters before balance: pick the <a href="#raster">tile rasterization</a> first — grouped ordering so each wave's operands fit in L2 — then fix the tail.) <b>Symptom:</b> wave quantization. Concretely: M=N=4096 with 128×256 tiles gives 32×16 = 512 tiles. A B200 has 148 SMs, so 512/148 = 3.46 waves — three full waves, then a tail wave with 68 of 148 SMs busy. That last wave runs at 46% utilization, wasting ~13% of the whole kernel. Gets worse for skinny shapes.</p>
+      <p><b>Fix:</b> split the K dimension of leftover tiles with Stream-K/split-K (or choose a smaller output tile) so idle SMs receive real parallel work; reduce partials through a workspace, which can be allocated with <a href="#mallocasync">cudaMallocAsync</a>. <a href="#clc">CLC</a> is complementary: it can distribute those decomposed or unequal-cost work units without a hot global software queue, but stealing the original 68 whole tiles cannot manufacture another 80 tile computations. For uniform indivisible tiles, CLC alone does not remove wave quantization.</p>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="snum">5</div>
+    <div class="sbody">
+      <h3>The GEMM has neighbors → <a href="#streams">streams</a>, <a href="#graphs">graphs</a>, <a href="#pdl">PDL</a></h3>
+      <p>Zoom out: your matmul lives in a network. Three distinct situations, three tools:</p>
+      <p><b>Independent GEMMs</b> (MoE experts, batched heads, different requests): concurrent <a href="#streams">streams</a> — or better, one grouped/batched GEMM kernel, since on-GPU scheduling beats stream-level scheduling when shapes are known. <b>A chain of dependent GEMMs</b> (transformer MLP: up-proj → activation → down-proj): <a href="#pdl">PDL</a>, so down-proj's TMA descriptor setup and weight prefetch overlap up-proj's tail — worth a few µs per pair, which at decode batch 1 is a real fraction of each layer. <b>Hundreds of small GEMMs per step</b> (a full decode pass): capture the step into a <a href="#graphs">graph</a> with PDL edges baked in; replay for one launch per token instead of hundreds.</p>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="snum">6</div>
+    <div class="sbody">
+      <h3>GEMM vs the all-reduce → <a href="#priorities">priorities</a>, <a href="#knobs">sync domains</a>, <a href="#green">green contexts</a></h3>
+      <p><b>Symptom:</b> tensor-parallel training/inference overlaps GEMM with NCCL, but the comm kernel's blocks queue behind three waves of GEMM blocks, and its heavy membar fences stall GEMM warps. <b>Fix, in escalating order:</b> high-priority stream for NCCL (dispatch-order hint) → <code>cudaLaunchMemSyncDomainRemote</code> on the comm kernels so their fences stop interfering → a <a href="#green">green context</a> reserving ~16 SMs so comm always has hardware. Note the interplay with stage 4: a CLC/persistent GEMM sized to "all SMs" would starve the comm slice — CLC's cancel-based model handles this gracefully, a fixed persistent grid does not.</p>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="snum">7</div>
+    <div class="sbody">
+      <h3>Dissolve the kernel boundary → <a href="#megakernel">megakernel</a></h3>
+      <p>End state for batch-1 decode: the GEMMs stop being kernels at all. Each becomes an instruction ("MLP layer 12, tiles 0–47") in a per-SM program; dependencies become per-tile counters, so down-proj tiles start as soon as <em>their</em> up-proj inputs exist rather than waiting for the whole layer; weights for layer N+1 stream via TMA into paged smem while layer N computes. Stages 1–4 all survive inside — the megakernel is those same warps and pipelines, minus the launch boundaries.</p>
+    </div>
+  </div>
+
+  <div class="note" style="margin-top:22px"><b>What honestly doesn't apply</b> — GEMM is regular, so the irregular-work tools stay in the drawer: <a href="#cdp">dynamic parallelism</a> (no data-dependent work discovery), <a href="#condnodes">conditional nodes</a> (no on-device control flow — unless the GEMM sits in an iterate-to-convergence solver), <a href="#devgraphs">device graph launch</a> (no on-GPU dispatch decision). Knowing a technique is irrelevant is as useful as knowing it exists — the <a href="#bfs">BFS walkthrough</a> below is where each of those tools becomes load-bearing. Two adjacent knobs that <em>do</em> matter: an <a href="#knobs">L2 persisting window</a> on weights for GEMV-shaped decode, and <a href="#mps">MPS/MIG</a> only once this GEMM serves multiple tenants.</p></div>
+</section>
+
+<!-- ============ DECISION TABLE ============ -->
+<!-- ============ IRREGULAR WORKED EXAMPLE ============ -->
+<section class="layer" id="bfs">
+  <div class="layerhead"><span class="tag t-x">Worked example II</span><h2>The irregular half: frontier BFS</h2></div>
+  <p class="layersub">Breadth-first search over a graph is the canonical irregular workload: the amount of work per step is discovered at runtime, per-vertex cost varies by orders of magnitude (degree 2 vs degree 2M), and nothing tiles. It stands in here for adaptive mesh refinement, tree/BVH traversal, and sparse factorization — every tool the matmul walkthrough rejected is load-bearing below.</p>
+
+  <div class="stage">
+    <div class="snum">0</div>
+    <div class="sbody">
+      <h3>Baseline: one kernel per frontier level, host in the loop</h3>
+      <p>Each level: launch an expand kernel over the current frontier, copy the new frontier's size back to the CPU, decide whether to loop. <b>Symptom:</b> a device→host round trip plus a launch <em>per level</em> — for a high-diameter graph (road networks: thousands of levels of tiny frontiers), the CPU round trips cost more than the traversal.</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>while True:
+    launch(expand, grid=blocks(front_n), stream=s)
+    copy_async(h_n, d_next_n, stream=s)
+    s.synchronize()                 <span class="cm"># &lt;- the bottleneck: host round trip / level</span>
+    if h_n == 0: break
+    front, next = next, front;  front_n = h_n</code></pre><pre class="codepane pane-cu" hidden><code>while (true) {
+    <span class="fn">expand</span>&lt;&lt;&lt;blocks(front_n), 256, 0, s&gt;&gt;&gt;(front, front_n, next, d_next_n);
+    cudaMemcpyAsync(&amp;h_n, d_next_n, 4, cudaMemcpyDeviceToHost, s);
+    cudaStreamSynchronize(s);              <span class="cm">// ← the bottleneck</span>
+    if (h_n == 0) break;
+    std::swap(front, next); front_n = h_n;
+}</code></pre></div>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="snum">1</div>
+    <div class="sbody">
+      <h3>Kill the host round trip → <a href="#condnodes">conditional WHILE node</a> or <a href="#devgraphs">device graph launch</a></h3>
+      <p>The loop condition lives in GPU data, so let the GPU evaluate it. Wrap {expand, compact, check} as the body of a WHILE conditional node: the check kernel calls <code>cudaGraphSetConditional(h, next_n &gt; 0)</code> and the graph re-runs its body with zero CPU involvement. The device-graph alternative: the check kernel tail-launches the level graph again (<code>cudaStreamGraphTailLaunch</code>), a self-scheduling pipeline. <b>Buys:</b> the per-level cost drops from a sync + launch round trip to on-device dispatch; for the road-network case this is the single biggest win, exactly as graphs were for decode. This is the "iterate-until-converged" pattern the matmul note said would justify these tools.</p>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="snum">2</div>
+    <div class="sbody">
+      <h3>Degree skew → binning + <a href="#cdp">CDP2 fire-and-forget</a></h3>
+      <p><b>Symptom:</b> one thread per frontier vertex means the thread holding the 2M-degree hub runs 10⁶× longer than its warp-mates; the whole grid waits on one lane. <b>Fix:</b> classify by degree during expansion — small vertices handled per-thread, medium per-warp (ballot + prefix sum to divide edges), large per-CTA. For the rare monster vertex, the canonical dynamic-parallelism use finally appears: launch a child grid sized to its edge list, discovered at runtime, impossible to size from the host.</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>@kernel
+def expand(front, q):
+    v = front[global_thread_idx()]
+    deg = row[v + 1] - row[v]
+    if   deg &lt;= 32:   expand_per_thread(v)
+    elif deg &lt;= 4096: q.warp_bin.push(v)         <span class="cm"># re-binned, warp-cooperative</span>
+    else: launch(expand_hub, grid=blocks(deg),   <span class="cm"># canonical CDP2: child</span>
+                 stream=FIRE_AND_FORGET)         <span class="cm"># sized by runtime data</span></code></pre><pre class="codepane pane-cu" hidden><code>__global__ void <span class="fn">expand</span>(const int* front, int n, WorkQueues q) {
+    int v = front[blockIdx.x * blockDim.x + threadIdx.x];
+    int deg = row[v + 1] - row[v];
+    if      (deg &lt;= 32)   expand_per_thread(v);
+    else if (deg &lt;= 4096) push(q.warp_bin, v);      <span class="cm">// re-binned, warp-cooperative</span>
+    else <span class="fn">expand_hub</span>&lt;&lt;&lt;blocks(deg), 256, 0,          <span class="cm">// canonical CDP2:</span>
+                       cudaStreamFireAndForget&gt;&gt;&gt;(v); <span class="cm">// child sized by data</span>
+}</code></pre></div>
+      <p>Note the priority order: binning (cheap, no launch) handles 99.9% of skew; CDP handles the tail where a child launch's ~µs overhead is amortized over millions of edges. Using CDP for <em>every</em> vertex is the classic anti-pattern — per-launch overhead swamps small children.</p>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="snum">3</div>
+    <div class="sbody">
+      <h3>Fuse the whole traversal → <a href="#persistent">persistent kernel</a> + global work queue</h3>
+      <p>The irregular analog of the megakernel: launch one wave of blocks that run for the whole search, pulling vertices from a global queue (atomic head/tail) and pushing discovered neighbors back. Level boundaries become counters or vanish entirely (for algorithms tolerant of async traversal); idle blocks spin with <code>nanosleep</code> backoff on an empty-but-not-done queue. This is where the <a href="#syncmodel">sync-model table</a> earns its place: the queue needs acquire/release atomics at device scope, and forward progress needs care — a block waiting on work that only a not-yet-scheduled block would produce is a livelock, which is why the grid must fit in one wave (<a href="#coop">cooperative launch</a> guarantees it).</p>
+<div class="codeblock"><div class="codetabs"><button class="ct active" data-l="py">python-ish</button><button class="ct" data-l="cu">CUDA C++</button></div><pre class="codepane pane-py"><code>@kernel
+def bfs_persistent(q):
+    while True:
+        v = q.try_pop()                <span class="cm"># acquire semantics</span>
+        if v is None:
+            if q.done(): return        <span class="cm"># drained AND no producers</span>
+            nanosleep(200); continue   <span class="cm"># back off, don't hammer</span>
+        for u in neighbors(v):
+            if claim(u): q.push(u)     <span class="cm"># release semantics</span></code></pre><pre class="codepane pane-cu" hidden><code>__global__ void <span class="fn">bfs_persistent</span>(Queue q, ...) {
+    while (true) {
+        int v;
+        if (!q.try_pop(&amp;v)) {                     <span class="cm">// acquire semantics</span>
+            if (q.done()) return;                  <span class="cm">// drained AND no producers</span>
+            __nanosleep(200); continue;            <span class="cm">// back off, don't hammer</span>
+        }
+        for (int e = row[v]; e &lt; row[v+1]; ++e)
+            if (claim(col[e])) q.push(col[e]);     <span class="cm">// release semantics</span>
+    }
+}</code></pre></div>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="snum">4</div>
+    <div class="sbody">
+      <h3>The Blackwell angle → <a href="#clc">CLC</a>, with its honest limit</h3>
+      <p>Within one level, frontier work is exactly CLC's shape: launch one block per frontier vertex (or per bin chunk), let the first wave steal pending blocks, and skew balances in hardware with no atomic queue. But note the boundary: CLC redistributes blocks <em>that were in the launched grid</em> — it cannot cover work discovered <em>after</em> launch. So CLC replaces the software queue for the per-level kernels of stage 1, while the fully-fused stage 3 still needs its own queue for dynamically discovered vertices. The two compose: CLC-drained level kernels inside a device-graph WHILE loop is a clean Blackwell BFS.</p>
+    </div>
+  </div>
+
+  <div class="stage">
+    <div class="snum">5</div>
+    <div class="sbody">
+      <h3>External producers → <a href="#streammemops">doorbells</a> and <a href="#hostpaths">NVSHMEM signals</a></h3>
+      <p>When frontier work arrives from outside — another GPU's partition of the graph, a NIC, a host thread — the waiting becomes scheduling. Stream-ordered: gate the next level's graph on <code>cuStreamWaitValue32</code> against a doorbell word. In-kernel (persistent version): the queue's producers are remote — NVSHMEM <code>put</code> + <code>signal</code> into this GPU's queue, with <code>nvshmem_signal_wait_until</code> as the consumer's blocking pop. Multi-GPU BFS is precisely this: partition the graph, push remote-owned discovered vertices to their owner's queue, terminate via a distributed all-drained check.</p>
+    </div>
+  </div>
+
+  <div class="note" style="margin-top:22px"><b>What honestly doesn't apply here</b> — the mirror image of the matmul list: <a href="#tma">TMA</a> (irregular gathers have no dense tiles to describe — plain loads and <code>cp.async</code> do the memory work), <a href="#tmem">TMEM/tcgen05</a> (no MMA), <a href="#schedules">ping-pong</a> and <a href="#raster">rasterization</a> (no tile structure, no L2 tiling locality — though vertex reordering for locality is the graph-world cousin), and <a href="#pdl">PDL</a> only weakly (each level's size gates the next; there's little independent prologue to overlap). One matmul tool that returns unchanged: <a href="#priorities">priorities</a> / <a href="#green">green contexts</a> if the traversal shares the GPU with other work.</div>
+</section>
+
+<!-- ============ CPU LINEAGE / BACKGROUND ============ -->
+<section class="layer" id="lineage">
+  <div class="layerhead"><span class="tag t-x">Background</span><h2>Forty years of CPU concurrency, re-derived on a GPU</h2></div>
+  <p class="layersub">If the menu above feels like it lacks a "right answer," that's inherited. The CPU world never converged on one concurrency model either — but it converged on an <em>explanation</em> for why it can't, and every school it produced has a direct counterpart in this guide. Reading the toolbox through that lens turns an arbitrary list into a taxonomy.</p>
+
+  <article class="tech" id="schools">
+    <h3>The schools, mapped</h3>
+    <p>First, why so many models exist at all: "concurrency" conflates at least seven separate questions — what the units of work are, what ordering exists between them, who owns mutable state, how tasks communicate, how ready work maps onto processors, how overload is bounded, and how completion and failure propagate. Different systems answer different subsets, which is also why comparing streams, CLC, TMA, and TMEM head-to-head feels confusing: they live at different layers of that list (made explicit in <a href="#tuple">the decision rule below</a>).</p>
+    <p>The founding observation (Lee, <em>The Problem with Threads</em>, 2006; Ousterhout, <em>Why Threads Are a Bad Idea</em>, 1995): unrestricted shared-state threading makes programs nondeterministic by default and asks humans to prune an exponential interleaving space by hand. Every durable school of concurrent programming is a different choice of <b>what freedom to take away</b> — and each GPU technique here is one of those restrictions, re-implemented under GPU constants.</p>
+    <table>
+      <thead><tr><th>CPU school</th><th>Canonical form</th><th>What it restricts</th><th>GPU counterpart</th></tr></thead>
+      <tbody>
+        <tr><td>Threads &amp; locks</td><td>pthreads, mutexes, shared everything</td><td>Nothing — the cautionary baseline</td><td><a href="#streams">Streams</a> + events + global atomics</td></tr>
+        <tr><td>Fork-join / work stealing</td><td>Cilk, TBB, Go scheduler; Blumofe–Leiserson T₁/P + O(T∞)</td><td>Scheduling — declare tasks, a stealer places them</td><td><a href="#clc">CLC</a> (stealing in silicon), <a href="#persistent">persistent queues</a>, stream-K</td></tr>
+        <tr><td>Dataflow / task graphs</td><td>Dennis dataflow; StarPU, Legion, PaRSEC</td><td>Dependencies — declare the DAG, a runtime schedules it</td><td><a href="#graphs">CUDA graphs</a>; <a href="#megakernel">MPK's</a> event-driven task runtime</td></tr>
+        <tr><td>CSP / message passing</td><td>Hoare CSP, Erlang, Go channels, MPI</td><td>Communication — no shared state, only channels</td><td><a href="#warpspec">Warp specialization</a> over mbarrier channels; <a href="#hostpaths">NVSHMEM signals</a>, <a href="#streammemops">doorbells</a></td></tr>
+        <tr><td>Bulk-synchronous parallel</td><td>Valiant BSP: superstep → barrier → repeat</td><td>Timing — all communication at phase boundaries</td><td>Kernel-per-level (<a href="#bfs">BFS stage 0</a>), <a href="#coop">grid.sync()</a></td></tr>
+        <tr><td>Async / futures / event loops</td><td>Promises, io_uring, completion ports</td><td>Blocking — issue now, redeem a token later</td><td>The entire <a href="#movematrix">completion-contract world</a>: TMA→mbarrier, tcgen05.wait, bulk groups</td></tr>
+        <tr><td>Actors</td><td>Erlang/OTP, Akka: private state + mailboxes</td><td>State ownership — one owner per datum</td><td><a href="#megakernel">MPK workers</a> with private task queues; partitioned multi-GPU BFS</td></tr>
+        <tr><td>Lock-free / wait-free</td><td>Herlihy-style linearizable structures</td><td>Blocking — progress guaranteed without locks</td><td>Atomic device queues and counters (<a href="#persistent">persistent kernels</a>, <a href="#bfs">BFS queue</a>)</td></tr>
+        <tr><td>Transactional memory</td><td>Optimistic atomic regions</td><td>Interleaving — speculate, abort on conflict</td><td><em>No broadly useful GPU equivalent</em> — an honest gap in the mapping</td></tr>
+      </tbody>
+    </table>
+    <p>One axis is genuinely GPU-native and worth naming because it organizes the device-side layer: <b>who decides → at what granularity → who holds state</b>. Host loop → <a href="#graphs">graphs</a> (CPU decides, driver holds topology) → dispatcher + <a href="#devgraphs">device graphs</a> (GPU decides at kernel granularity, state laundered through gmem) → <a href="#megakernel">megakernel</a> (GPU decides at instruction granularity, state resident in registers/smem). Moving right buys latency and locality; it costs isolation, driver-validated correctness, and the freedom to change launch geometry.</p>
+  </article>
+
+  <article class="tech" id="transfers">
+    <h3>Three results that transfer</h3>
+    <p><b>Structure beats freedom.</b> Every CPU model that won did so by making a class of bug inexpressible — data races unrepresentable in CSP, deadlocked joins unrepresentable in fork-join. The GPU stack has been recapitulating that march for a decade: from "spin on an atomic and hope" toward typed pipelines, explicit completion contracts, and driver-validated graphs. Practical corollary: given two techniques of similar performance, prefer the one whose restrictions make <em>your</em> likely bug impossible, not the one with the most headroom.</p>
+    <p><b>The Lauer–Needham duality (1979).</b> Message-passing and shared-memory systems are formal duals — equivalent in expressiveness and performance, differing only in which mistakes they invite. This is the deep reason "no consensus" is the stable end state: the models are interconvertible, so the choice is ergonomic and workload-shaped, not correctness-shaped. The two worked examples are this theorem in practice: <a href="#gemm">matmul</a> wants the dataflow school (static schedules, declared dependencies); <a href="#bfs">BFS</a> wants the stealing and messaging schools. Neither is "right"; each matches its workload's structure.</p>
+    <p><b>Two-level (M:N) scheduling.</b> The CPU endgame was user-level tasks multiplexed onto kernel threads (scheduler activations, Go's runtime) sitting on OS-level partitions (cpusets, cgroups). The GPU stack is the same sandwich: work items multiplexed onto persistent blocks or CLC-drained grids (<a href="#persistent">layer 2</a>), which sit on <a href="#green">green contexts</a>, <a href="#mps">MPS/MLOPart</a>, and <a href="#mig">MIG</a> (<a href="#green">layer 5</a>). The lesson that transfers: keep the levels separate. Application-level load balancing and machine-level resource partitioning are different problems; entangling them (a persistent grid hard-sized to "all SMs" doing double duty as a partitioning decision) reproduces the classic pitfalls the CPU world spent the 1990s escaping.</p>
+  </article>
+
+  <article class="tech" id="nontransfers">
+    <h3>What doesn't transfer — and where to read instead</h3>
+    <p>The mainstream CPU schools all lean on one hidden subsidy: a preemptive OS scheduler with cheap context switches. "Spawn a million goroutines and let the runtime sort it out" works because a blocked task costs almost nothing and can always be descheduled. GPUs revoke the subsidy. Blocks are cooperatively scheduled, occupancy is the hard currency, and <b>forward progress is the programmer's problem</b> — the reason the <a href="#bfs">BFS persistent kernel</a> needed its one-wave guarantee, and the reason a block spinning on work that only an unscheduled block would produce is a livelock, not a slow day.</p>
+    <p>So the closest CPU literature isn't the mainstream threading canon but its harsher corners: <b>cooperative fibers and run-to-completion event systems</b> (where yielding is manual and starvation is your fault), <b>static real-time scheduling</b> (fixed resources, admission control, worst-case reasoning — the natural frame for megakernel instruction planning), and the <b>lock-free progress taxonomy</b> (Herlihy: wait-free ▸ lock-free ▸ obstruction-free), which maps directly onto auditing spin loops in persistent kernels — a CLC steal loop is lock-free (someone always makes progress), while a naive two-phase handshake between blocks may be neither. When a device-side design feels underspecified, these three bodies of work are where the missing arguments live.</p>
+  </article>
+
+  <article class="tech" id="duality">
+    <h3>The duality, sharpened: where does waiting work live?</h3>
+    <p>Lauer–Needham compresses to one operational question: <b>when an activity cannot make progress, where is the suspended computation represented?</b> Two answers exist. In a paused <em>execution context</em> — program counter, registers, stack — or in <em>queued data plus explicit state</em> — a descriptor, event, or state-machine record. Threads vs events, monitors vs server loops, futures vs callbacks are all this one choice wearing different clothes, and the durable conclusion is that the representation should follow the machine substrate, not ideology.</p>
+    <p>The GPU instance is exact. An <b>ordinary oversized grid</b> represents waiting work as data: the hardware holds unstarted block indices — each one literally a queued work descriptor — and materializes execution contexts as resources free. A <b>persistent kernel</b> flips the representation: long-lived resident contexts pull explicit descriptors from a software queue. The same computation, both ways — and each representation's cost is concrete: a waiting resident context holds registers and smem that other work can't use; a waiting descriptor holds queue slots, atomics traffic, and cache. <a href="#clc">CLC</a> is an unusually literal bridge between the two — <em>unstarted block index → stolen descriptor → processed by a resident context</em> — which is the deep reason it combines persistent workers' locality with an ordinary grid's scheduling freedom. One level down, a <a href="#warpspec">warp-specialized pipeline</a> is the same duality inside an SM: full/empty mbarrier phases are the message view; the smem stages they guard are the shared-state view.</p>
+    <p>Lee's paper then adds the discipline the duality doesn't: his argument is not "messages good, shared memory bad" (a mailbox with racing senders is just as nondeterministic) — it's <b>determinism first, nondeterminism confined and explicit</b>. The GPU translation is a rule this guide should state outright: <b>scheduling may be nondeterministic; correctness must not depend on the schedule.</b> CLC is the perfect test case — if every block index names an independent tile, stealing changes performance and not the answer; if blocks race through order-sensitive global state, the steal schedule leaks into program semantics. One subtlety worth its own sentence: distinguish <em>mathematical</em> from <em>bitwise</em> determinism — floating-point atomic reductions can be order-independent in exact arithmetic yet bitwise order-dependent, because fp addition isn't associative. Decide which one you're promising before you let the scheduler choose.</p>
+    <div class="note"><b>Design rules this yields</b> — define tile ownership and producer/consumer edges before assigning warps or CTAs; use the narrowest communication scope that works (warp → block → cluster → device); default to ordinary grids for regular independent work (the hardware block queue is already an efficient work queue) and pay for persistence/specialization only when it buys overlap, state reuse, or load balancing; represent buffer ownership with explicit barrier phases, never inferred warp timing; and treat the context-vs-descriptor choice as a resource decision about <em>which memory holds your waiting work</em>.</div>
+  </article>
+
+  <article class="tech" id="consensus">
+    <h3>What actually reached consensus</h3>
+    <p>Beneath the school wars, five points did converge — and each lands directly on GPU practice:</p>
+    <p><b>1. Data races are not a programming model.</b> Modern memory models settled on happens-before + data-race freedom: racy programs are undefined; race-free programs get simple semantics. The GPU translation: relaxed atomics are primitives for <em>building</em> models (queues, counters, doorbells), not a pleasant application-level model — use them only where you can state the invariant and prove the ordering, which is what the <a href="#syncmodel">sync-model table</a> exists for.</p>
+    <p><b>2. Logical concurrency ≠ physical parallelism.</b> Expose a million tasks; map them onto a bounded set of workers (the Cilk T₁/P + O(T∞) result). GPU translation: the number of tiles is not the number of resident CTAs or streams — that gap is precisely what <a href="#persistent">persistent queues</a>, <a href="#clc">CLC</a>, and <a href="#raster">rasterization functions</a> manage. Confusing the two levels is how you get a grid hard-sized to the machine doing double duty as a partitioning decision.</p>
+    <p><b>3. Concurrency needs lifetime structure.</b> Structured concurrency (child work completes, fails, or is cancelled before its scope exits) eliminated orphan tasks on CPUs. Honest assessment: CUDA has little native structure here — <a href="#graphs">graphs</a> come closest (a launch is a scoped unit with known contents); ad-hoc streams, fire-and-forget <a href="#cdp">CDP</a> children, and device queues make it easy to create work whose lifetime nobody can state. Treat that as a cost when choosing.</p>
+    <p><b>4. Prefer ownership and partitioning over synchronization.</b> The most robust synchronization is eliminated sharing: partition, own exclusively, accumulate locally then reduce, <em>transfer</em> ownership rather than share writable aliases. This is the right frame for GPU memory placement — which CTA owns this smem tile; which warp owns this pipeline stage; is this TMEM buffer producer-owned or consumer-owned right now; when exactly does ownership transfer after a TMA completes? Every mbarrier phase flip in a <a href="#warpspec">warp-specialized</a> pipeline is an ownership transfer; naming it that way makes the barrier protocol legible.</p>
+    <p><b>5. Bound in-flight work; provide backpressure.</b> An async API that lets producers create unlimited work is incomplete — CPU reactive systems added explicit demand signaling for this reason. The GPU analogues: fixed pipeline stage counts, bounded persistent queues, capped in-flight TMA transactions, and producers forbidden from overwriting buffers consumers still own. <b>Double and triple buffering are not just performance techniques — they are backpressure protocols</b>, with the empty/full mbarrier pair as the demand channel.</p>
+  </article>
+
+  <article class="tech" id="tuple">
+    <h3>A working decision rule</h3>
+    <p>The reason comparing streams, CLC, TMA, and TMEM head-to-head feels confusing is that "concurrency" conflates separate questions — what the units of work are, what ordering exists, who owns mutable state, how tasks communicate, how ready work maps to hardware, how overload is bounded, how completion propagates. Each mechanism in this guide answers a <em>subset</em>. Laid out by question:</p>
+    <table>
+      <thead><tr><th>Question</th><th>Mechanisms that answer it</th></tr></thead>
+      <tbody>
+        <tr><td>What are the tasks?</td><td>Kernels, tiles, CTAs, warpgroups, megakernel instructions</td></tr>
+        <tr><td>When is work ready?</td><td><a href="#graphs">Graph edges</a>, <a href="#streams">stream events</a>, <a href="#pdl">PDL</a>, MPK events, per-tile counters</td></tr>
+        <tr><td>Who runs ready work?</td><td>Hardware launch, <a href="#clc">CLC</a>, <a href="#persistent">persistent queues</a>, scheduler warps</td></tr>
+        <tr><td>How much stays resident?</td><td>Separate kernels ↔ <a href="#megakernel">megakernel</a> (the fusion boundary)</td></tr>
+        <tr><td>Where does state live?</td><td><a href="#memmap">HBM, L2, DSMEM, SMEM, registers, TMEM</a></td></tr>
+        <tr><td>How does it get there?</td><td><a href="#tma">TMA</a>, cp.async, DMA engines, multicast, tcgen05.cp/ld/st</td></tr>
+        <tr><td>How is readiness observed?</td><td>Events, <a href="#asyncbar">mbarriers</a>, bulk groups, tcgen05.wait (<a href="#movematrix">movement matrix</a>)</td></tr>
+        <tr><td>How much may be in flight?</td><td>Pipeline depth, queue bounds, occupancy, TMA transaction caps</td></tr>
+        <tr><td>Which agent can observe it?</td><td>Scopes, fences, proxy fences (<a href="#syncmodel">sync model</a>)</td></tr>
+      </tbody>
+    </table>
+    <p>Which yields the practical discipline: for each pipeline, write down the tuple <b>(work unit · dependencies · mutable owner · data location · movement engine · completion token · in-flight bound · scheduling policy)</b> — e.g. a Blackwell GEMM: <em>(output tile · A/B staged and accumulator free · one warpgroup per role · HBM→SMEM→TMEM→registers→HBM · TMA + tcgen05 · mbarrier + tcgen05.wait · 3 smem stages, 2 TMEM buffers · persistent cluster fed by CLC)</em>. If a slot is blank, the design is incomplete; if two mechanisms fill the same slot, one is redundant. The mechanisms compose along the tuple — they are almost never mutually exclusive alternatives.</p>
+    <p>And the literature's closest thing to a verdict, translated: <b>describe dependencies and ownership first — scheduling is an implementation decision.</b> Use structured task DAGs for control, ownership for state, bounded queues for capacity, and let a runtime (driver, CLC, scheduler warps) place the ready work. Drop to raw atomics, fences, and hand-rolled schedulers only where measurement justifies it.</p>
+  </article>
+</section>
+
+<!-- ============ PROFILER APPENDIX ============ -->
+<section class="layer" id="profiler">
+  <div class="layerhead"><span class="tag t-x">Appendix</span><h2>Reading the profiler into the decision table</h2></div>
+  <p class="layersub">The decision table below is keyed on symptoms; this is where those symptoms live in Nsight. The two tools see different layers: <b>nsys</b> (Nsight Systems) sees the timeline between kernels — the host layer; <b>ncu</b> (Nsight Compute) sees inside one kernel — the device and SM layers. Workflow: nsys first, fix the timeline; then ncu per hot kernel, fix the stalls; re-profile, since fixing one bottleneck promotes the next.</p>
+
+  <article class="tech" id="nsys-signals">
+    <h3>nsys — timeline signals → host-layer techniques</h3>
+    <table>
+      <thead><tr><th>What the timeline shows</th><th>It means</th><th>Reach for</th></tr></thead>
+      <tbody>
+        <tr><td>White gaps between many short kernels; dense <code>cudaLaunchKernel</code> row underneath</td><td>CPU launch overhead on the critical path</td><td><a href="#graphs">Graphs</a>, then <a href="#pdl">PDL</a> on chains that remain</td></tr>
+        <tr><td>Independent kernels strictly back-to-back in one stream row</td><td>False serialization</td><td><a href="#streams">Streams + events</a> (and check <a href="#streams">NULL-stream semantics</a>)</td></tr>
+        <tr><td>Memcpy rows never overlapping compute rows</td><td>Pageable memory or single-queue submission</td><td>Pinned memory + <a href="#hostpaths">multi-stream copy-engine pipeline</a></td></tr>
+        <tr><td>Comm/NCCL kernels queued behind waves of GEMM blocks</td><td>Dispatch-order starvation</td><td><a href="#priorities">Priorities</a> → <a href="#knobs">sync domains</a> → <a href="#green">green contexts</a></td></tr>
+        <tr><td>Periodic <code>cudaStreamSynchronize</code> / <code>cudaMemcpy</code> D2H spikes inside a loop</td><td>Host in the decision loop</td><td><a href="#condnodes">Conditional nodes</a>, <a href="#devgraphs">device graph launch</a>, <a href="#streammemops">doorbells</a></td></tr>
+        <tr><td>Gaps at iteration boundaries that shrink with batch size</td><td>Fixed per-step orchestration cost being amortized</td><td>Graph replay per step; ultimately the <a href="#megakernel">megakernel</a> question</td></tr>
+      </tbody>
+    </table>
+  </article>
+
+  <article class="tech" id="ncu-signals">
+    <h3>ncu — kernel counters → device/SM-layer techniques</h3>
+    <table>
+      <thead><tr><th>ncu section / metric</th><th>It means</th><th>Reach for</th></tr></thead>
+      <tbody>
+        <tr><td>Launch Statistics: fractional "Waves Per SM" (e.g. 3.46)</td><td>Tail-wave quantization</td><td><a href="#persistent">Stream-K</a>; <a href="#clc">CLC</a> for uneven whole tiles</td></tr>
+        <tr><td>Warp State: <code>stall_long_scoreboard</code> dominates</td><td>Global-memory latency exposed</td><td><a href="#tma">TMA</a> + deeper <a href="#pipelines">pipelining</a>, more stages</td></tr>
+        <tr><td>Warp State: <code>stall_barrier</code> heavy; tensor-pipe utilization dips at tile boundaries</td><td>Epilogue exposed</td><td><a href="#schedules">Ping-pong</a> (sm_90/120); <a href="#tmem">TMEM double buffering</a> (sm_100)</td></tr>
+        <tr><td>Memory Workload: low L2 hit rate on operand reads</td><td>Concurrent tiles share nothing</td><td><a href="#raster">Rasterization / tile swizzle</a>, then <a href="#clusters">clusters + multicast</a></td></tr>
+        <tr><td>Memory Workload: local-memory traffic where none belongs</td><td>Register spills</td><td><code>setmaxnreg</code> redistribution, smaller tiles, <a href="#tmem">TMEM</a> for accumulators</td></tr>
+        <tr><td>High variance in per-SM active cycles (Compute Workload Analysis)</td><td>Load imbalance across SMs</td><td><a href="#persistent">Persistent queues</a> / <a href="#clc">CLC</a>; <a href="#bfs">binning</a> for degree skew</td></tr>
+        <tr><td>Atomic instruction throughput high; LSU stalls near a counter address</td><td>Work-queue contention</td><td>Shard the queue, <code>nanosleep</code> backoff, or <a href="#clc">CLC</a> (no software queue)</td></tr>
+        <tr><td>Theoretical occupancy ≫ achieved; launch config boxed by registers/smem</td><td>Geometry, not scheduling</td><td><a href="#knobs">Occupancy controls</a>, <code>__launch_bounds__</code>, cluster dims</td></tr>
+      </tbody>
+    </table>
+  </article>
+
+  <article class="tech" id="profiler-limits">
+    <h3>What traces cannot tell you</h3>
+    <div class="note"><b>The ncu replay trap</b> — ncu replays kernels <em>serially and in isolation</em>, flushing caches between passes by default. This destroys exactly the effects several techniques create: PDL overlap, graph packing, cross-kernel L2 reuse, and concurrent-stream interaction are invisible or actively distorted under ncu. Measuring a PDL or graph win in ncu is a category error — those live in nsys timelines or raw CUDA-event timing under production concurrency.</div>
+    <p>Two further limits. <b>Traces show the design you have, not the counterfactual:</b> a kernel-per-op profile never displays "a megakernel would buy X" — you do the gap accounting yourself (sum the inter-kernel bubbles plus the intra-kernel memory stalls that cross-op pipelining would hide; that arithmetic is how the megakernel papers motivate themselves). The profiler ranks symptoms; it does not price cures. And <b>the tuple layer is invisible:</b> no counter measures ownership structure, backpressure bounds, forward-progress soundness, or whether the dependency graph is at the right granularity — a profile can show the atomic queue is contended, not that the queue shouldn't exist. Profiles select <em>within</em> a design; the <a href="#tuple">tuple</a> designs.</p>
+    <p>Blackwell-specific caveat: counter coverage for the newest machinery (tcgen05 pipes, TMEM traffic, CLC behavior) has arrived incrementally across Nsight releases — for CLC you mostly observe <em>effects</em> (balanced per-SM cycles, no tail wave) rather than steals themselves. Keep Nsight current, and don't read a missing counter as missing activity.</p>
+  </article>
+
+  <article class="tech" id="latencies">
+    <h3>Orders of magnitude worth memorizing</h3>
+    <p>Approximate, ~2 GHz-era (1 cycle ≈ 0.5 ns); these drift with generation, driver, and OS — treat as decade markers and measure your own system. The structure to internalize: three regimes, a cliff between each, and every technique in this guide is a machine for keeping work out of the next regime up.</p>
+    <table>
+      <thead><tr><th>Regime</th><th>Operation</th><th>Rough cost</th><th>Hidden by</th></tr></thead>
+      <tbody>
+        <tr><td rowspan="3">ns (on-chip)</td><td>Warp switch to another resident warp</td><td>free, every cycle</td><td>— (it's the hider)</td></tr>
+        <tr><td>Register access</td><td>~1 cycle</td><td>—</td></tr>
+        <tr><td>Smem access · __syncthreads · mbarrier arrive</td><td>~20–40 cycles</td><td>Occupancy, ILP</td></tr>
+        <tr><td rowspan="4">100s of ns (memory)</td><td>L2 hit</td><td>~100–200 ns</td><td rowspan="4"><a href="#tma">TMA</a> + <a href="#pipelines">stages</a>, <a href="#warpspec">warp roles</a>; TMEM ops are async by design</td></tr>
+        <tr><td>HBM access</td><td>~300–500 ns</td><td></td></tr>
+        <tr><td>tcgen05.ld from TMEM</td><td>hundreds of cycles (unspecified)</td><td></td></tr>
+        <tr><td>Uncontended global atomic</td><td>≈ memory latency; contended → µs</td><td></td></tr>
+        <tr><td rowspan="6">µs (launch machinery, host, peers)</td><td>grid.sync(); kernel-boundary gap in-stream</td><td>~1–3 µs</td><td rowspan="6"><a href="#graphs">Graphs</a>, <a href="#pdl">PDL</a>, <a href="#devgraphs">device dispatch</a>, <a href="#persistent">persistence</a>, <a href="#megakernel">megakernels</a></td></tr>
+        <tr><td>Graph replay per node (no-op: 2.1 µs alone → 1.3 µs in graph)</td><td>~1–2 µs</td><td></td></tr>
+        <tr><td>Kernel launch API; end-to-end empty kernel</td><td>~2–5 µs; ~4–10 µs</td><td></td></tr>
+        <tr><td>Device-side / CDP launch</td><td>µs-scale</td><td></td></tr>
+        <tr><td>PCIe RTT + small copy; blocking sync wake; host callback</td><td>~2–10 µs; ~5–20 µs + jitter</td><td></td></tr>
+        <tr><td>Small-message NCCL all-reduce (NVLink)</td><td>~10–30 µs</td><td></td></tr>
+      </tbody>
+    </table>
+    <p>Derived rules of thumb: a kernel under ~10 µs is launch-bound almost by definition; launch overhead drops below ~5% only above ~50–100 µs of kernel time; <a href="#pdl">PDL</a>'s ~1–3 µs per boundary matters precisely when kernels run shorter than ~100 µs; and the <a href="#megakernel">megakernel</a> case is (per-op µs saved) × (hundreds of ops) × (every token).</p>
+  </article>
+</section>
+
+<section class="layer" id="decision">
+  <div class="layerhead"><span class="tag t-x">Cheat sheet</span><h2>Symptom → technique</h2></div>
+  <table>
+    <thead><tr><th>Profiler symptom</th><th>Reach for</th><th>Layer</th></tr></thead>
+    <tbody>
+      <tr><td>Independent kernels/copies serialize</td><td>Streams + events</td><td><span class="pill p-host">host</span></td></tr>
+      <tr><td>Comm kernels starved behind GEMM waves</td><td>Priorities → sync domains → green contexts</td><td><span class="pill p-host">host</span> <span class="pill p-part">part</span></td></tr>
+      <tr><td>Gaps between many small kernels, static structure</td><td>CUDA graphs (+ exec update)</td><td><span class="pill p-host">host</span></td></tr>
+      <tr><td>Bubble between dependent kernels</td><td>PDL, also as graph edges</td><td><span class="pill p-host">host</span></td></tr>
+      <tr><td>CPU decides loops/branches the GPU could decide</td><td>Conditional nodes, device graph launch</td><td><span class="pill p-host">host</span></td></tr>
+      <tr><td>L2 hit rate poor; operands re-fetched across a wave</td><td>Threadblock rasterization / tile swizzle (grouped order)</td><td><span class="pill p-dev">device</span></td></tr>
+      <tr><td>Epilogue latency exposed at tile boundaries (sm_90 / sm_120)</td><td>Ping-pong schedule; on sm_100, TMEM double buffering instead</td><td><span class="pill p-sm">SM</span></td></tr>
+      <tr><td>Uniform tail-wave waste</td><td>Stream-K/split-K or smaller tiles; CLC only after creating stealable work</td><td><span class="pill p-dev">device</span></td></tr>
+      <tr><td>Uneven whole-tile runtimes</td><td>CLC on supported Blackwell targets; persistent queue elsewhere</td><td><span class="pill p-dev">device</span></td></tr>
+      <tr><td>Persistent kernel must coexist with other kernels</td><td>CLC (steals only what's pending, exits cleanly)</td><td><span class="pill p-dev">device</span></td></tr>
+      <tr><td>Low-batch LLM decode latency still too high after graphs</td><td>Megakernel (ThunderKittens, Mirage MPK)</td><td><span class="pill p-dev">device</span></td></tr>
+      <tr><td>Recursive, data-dependent work discovery</td><td>CDP2 / device graph launch</td><td><span class="pill p-dev">device</span></td></tr>
+      <tr><td>Same gmem tile loaded by many CTAs</td><td>Clusters + TMA multicast; preferred dims on Blackwell</td><td><span class="pill p-dev">device</span></td></tr>
+      <tr><td>Tensor cores idle while loads run (or vice versa)</td><td>Warp specialization, TMA, async barriers, pipelines</td><td><span class="pill p-sm">SM</span></td></tr>
+      <tr><td>Epilogue stalls the MMA; accumulators blow the register budget</td><td>TMEM double buffering + tcgen05.ld drain warpgroup</td><td><span class="pill p-data">data</span></td></tr>
+      <tr><td>H2D/D2H copies serialize with compute</td><td>Pinned memory + async copies on 3 streams (copy engines)</td><td><span class="pill p-data">data</span></td></tr>
+      <tr><td>Cross-CTA partials bounce through gmem</td><td>DSMEM st.async / TMA smem↔smem within a cluster</td><td><span class="pill p-data">data</span></td></tr>
+      <tr><td>Multi-tenant / multi-model on one GPU</td><td>MPS (soft), MIG (hard), green contexts (in-process)</td><td><span class="pill p-part">part</span></td></tr>
+    </tbody>
+  </table>
+  <div class="note"><b>Effort ladder for Blackwell inference</b> — graphs first, then PDL on the hot chains, then CLC-based persistent scheduling in the big kernels, and a megakernel only when latency still matters after all of that.</div>
+</section>
+
+<!-- ============ REFERENCES ============ -->
+<section class="layer" id="refs">
+  <div class="layerhead"><span class="tag t-x">Sources</span><h2>References</h2></div>
+  <ul class="refs">
+    <li><a href="https://docs.nvidia.com/cuda/cuda-programming-guide/03-advanced/feature-survey.html">CUDA 13.3 Programming Guide — A Tour of CUDA Features</a> and its detailed chapters (rolling July 2026 documentation)</li>
+    <li><a href="https://docs.nvidia.com/cuda/blackwell-tuning-guide/">CUDA 13.3 Blackwell Tuning Guide</a> — target-specific limits, compatibility, occupancy, clusters, TMEM, and tuning guidance</li>
+    <li><a href="https://docs.nvidia.com/cuda/cuda-runtime-api/api-sync-behavior.html">CUDA Runtime API synchronization behavior</a> — the authoritative pageable/pinned copy and host-blocking rules</li>
+    <li><a href="https://docs.nvidia.com/cuda/cuda-driver-api/group__CUDA__MEMOP.html">Driver stream memory operations</a> · <a href="https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__EXTRES__INTEROP.html">external semaphore interop</a></li>
+    <li><a href="https://nvidia.github.io/cccl/unstable/libcudacxx/extended_api/asynchronous_operations/memcpy_async.html">libcu++ <code>cuda::memcpy_async</code></a> · <a href="https://nvidia.github.io/cccl/unstable/libcudacxx/extended_api/synchronization_primitives/pipeline.html">pipeline</a> · <a href="https://nvidia.github.io/cccl/unstable/libcudacxx/extended_api/synchronization_primitives/barrier.html">barrier</a></li>
+    <li><a href="https://docs.nvidia.com/nvshmem/">NVSHMEM documentation</a> · <a href="https://docs.nvidia.com/gpudirect-storage/">GPUDirect Storage</a> · <a href="https://docs.nvidia.com/cuda/gpudirect-rdma/">GPUDirect RDMA</a></li>
+    <li><a href="https://research.colfax-intl.com/dynamic-persistent-tile-scheduling-with-cluster-launch-control-clc-on-nvidia-blackwell-gpus/">Colfax — Dynamic persistent tile scheduling with CLC</a> (PTX-level walkthrough + CuTe DSL)</li>
+    <li><a href="https://research.colfax-intl.com/cutlass-tutorial-persistent-kernels-and-stream-k/">Colfax — Persistent kernels &amp; Stream-K</a> (rasterization, tile schedulers, split-K vs stream-K) · <a href="https://research.colfax-intl.com/tutorial-hopper-tma/">TMA deep dive</a> · <a href="https://research.colfax-intl.com/flashattention-4-algorithm-and-kernel-pipelining-co-design-for-asymmetric-hardware-scaling/">FA-4 pipelining co-design</a> · <a href="https://research.colfax-intl.com/cutlass-tutorial-nvfp4-blockscaled-gemm-on-nvidia-rtx-pro-blackwell-gpus-sm12x/">SM12x kernel paradigm</a></li>
+    <li><a href="https://developer.nvidia.com/blog/nvidia-cuda-13-1-powers-next-gen-gpu-programming-with-nvidia-cuda-tile-and-performance-gains/">CUDA 13.1 release notes blog</a> (MLOPart, static MPS SM partitioning) · <a href="https://docs.nvidia.com/deploy/mps/">MPS documentation</a></li>
+    <li>Megakernels: <a href="https://hazyresearch.stanford.edu/blog/2025-05-27-no-bubbles">Hazy — Look Ma, No Bubbles (Llama-1B)</a> · <a href="https://hazyresearch.stanford.edu/blog/2025-09-28-tp-llama-main">Hazy — the whole GPU (Llama-70B, 8-GPU)</a> · <a href="https://hazyresearch.stanford.edu/blog/2025-09-22-pgl">Hazy — parallel global layouts</a> · <a href="https://arxiv.org/abs/2512.22219">MPK paper</a> · <a href="https://github.com/mirage-project/mirage/tree/mpk">MPK code</a></li>
+    <li><a href="https://docs.nvidia.com/cutlass/latest/media/docs/cpp/blackwell_cluster_launch_control.html">CUTLASS — Blackwell cluster launch control</a> (scheduler-warp pipeline design)</li>
+    <li><a href="https://pytorch.org/blog/enabling-cluster-launch-control-with-tlx/">PyTorch — Enabling CLC with Triton TLX</a></li>
+    <li><a href="https://www.modular.com/blog/matrix-multiplication-on-blackwell-part-4---breaking-sota">Modular — Matmul on Blackwell, part 4</a> (CLC in a SOTA GEMM)</li>
+    <li>CPU concurrency lineage: Lee, <em>The Problem with Threads</em> (2006) · Ousterhout, <em>Why Threads Are a Bad Idea</em> (1995) · Blumofe &amp; Leiserson, <em>Scheduling Multithreaded Computations by Work Stealing</em> (1999) · Lauer &amp; Needham, <em>On the Duality of Operating System Structures</em> (1979) · Hoare, <em>CSP</em> (1978) · Valiant, <em>A Bridging Model for Parallel Computation</em> (1990) · Herlihy &amp; Shavit on progress conditions · von Behren, Condit &amp; Brewer, <em>Why Events Are a Bad Idea</em> (2003, the counterpoint) · <a href="https://people.eecs.berkeley.edu/~brewer/cs262/lauer78.pdf">Lauer–Needham PDF</a> · <a href="https://eecs.berkeley.edu/Pubs/TechRpts/2006/EECS-2006-1.pdf">Lee PDF</a></li>
+    <li><a href="https://docs.nvidia.com/cuda/parallel-thread-execution/">PTX ISA</a> — <code>clusterlaunchcontrol.try_cancel</code> / <code>query_cancel</code>, mbarrier, TMA</li>
+    <li><a href="https://hazyresearch.stanford.edu/blog">Hazy Research — megakernels &amp; ThunderKittens</a> · <a href="https://github.com/mirage-project/mirage">Mirage MPK</a></li>
+  </ul>
+</section>
+
+<footer>compiled july 2026 · targets CUDA 13.3, sm_100/sm_120 · verify intrinsic signatures against your toolkit — CLC APIs are young and still moving</footer>
+
+</div></main>
+</div>
+
+<script>
+const links=[...document.querySelectorAll('nav.side a[href^="#"]')];
+const map=new Map(links.map(a=>[a.getAttribute('href').slice(1),a]));
+const obs=new IntersectionObserver(es=>{
+  es.forEach(e=>{
+    if(e.isIntersecting){
+      links.forEach(a=>a.classList.remove('active'));
+      const a=map.get(e.target.id); if(a)a.classList.add('active');
+    }
+  });
+},{rootMargin:'-10% 0px -80% 0px'});
+document.querySelectorAll('article.tech, section.layer#gemm, section.layer#bfs, section.layer#decision, section.layer#refs').forEach(el=>obs.observe(el));
+
+document.querySelectorAll('.codeblock').forEach(cb=>{
+  cb.querySelectorAll('.ct').forEach(b=>b.addEventListener('click',()=>{
+    cb.querySelectorAll('.ct').forEach(x=>x.classList.toggle('active',x===b));
+    cb.querySelectorAll('.codepane').forEach(p=>{p.hidden=!p.classList.contains('pane-'+b.dataset.l)});
+  }));
+});
+</script>
+</body>
+</html>
